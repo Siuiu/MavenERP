@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>职位管理</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="../../laydate/laydate.js"></script>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li><a href="../users/userList.html">系统管理</a></li>
+    <li><a href="deptList.html">职位管理</a></li>
+    <li><a href="#">修改</a></li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>职位信息</span></div>
+  <ul class="forminfo">
+
+    <li>
+      <label>职位名称</label>
+      <input name="" type="text" value="" id="job_name" class="dfinput" />
+      <i>必填，不能超过30个字符</i>
+    </li>
+    <li> <label>所属部门：</label>
+      <select class="dfselect" id="dept" name="">
+
+      </select>
+    </li>
+    <li>
+      <label>&nbsp;</label>
+      <input name="" type="button" id="jobUpdate" class="btn" value="确认保存"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input name="" type="button" class="btn" value="返回"  onclick="window.history.go(-1);"/>
+    </li>
+  </ul>
+</div>
+<script type="text/javascript">
+  $(function () {
+    showdept();
+  var job_id=getParams("job_id");
+
+$.ajax({
+  url:"job_updateShowJob",
+  type:"get",
+  data:{"job_id":job_id},
+  dataType: "json",
+  success:function (d) {
+      $("#job_name").val(d.job_name);
+  }
+});
+
+$("#jobUpdate").click(function () {
+    $.ajax({
+      url:"jobUpdate",
+      type:"get",
+      data:{"job_id":job_id,"job_name":$("#job_name").val(),"dept_id":$("#dept").val()},
+      dataType:"json",
+      success:function (d) {
+        if(d!=0){
+          alert("修改成功");
+        }
+        else{
+          alert("修改失败");
+        }
+      }
+    });
+
+
+})
+
+  })
+
+  function  showdept() {
+    $.ajax({
+      url: "deptlist",
+      type: "get",
+      dataType: "json",
+      success:function (d) {
+        var p="  <option value=''>请选择部门</option>";
+        $.each(d,function (index,dept) {
+          p+=" <option value='"+dept.dept_id+"'>"+dept.dept_name+"</option>";
+        })
+        $("#dept").append(p);
+      }
+    })
+  }
+
+  function getParams(key) {
+    var keyList = [];
+    var valueList = [];
+    var hrefStr = decodeURIComponent(window.location.href);
+    var strArray = hrefStr.split("?");
+    var paramStr = strArray[1];
+    if((paramStr != null) && (paramStr != null)) {
+      var paramArray = paramStr.split("&");
+      for(var i = 0; i <
+      paramArray.length; i++) {
+        var param = paramArray[i];
+        valueList.push(param.substr(param.indexOf("=") + 1));
+        keyList.push(param.substr(0, param.indexOf("=")));
+      }
+      for(var j = 0; j < keyList.length; j++) {
+        if(key == keyList[j]) {
+          return valueList[j];
+        }
+      }
+    }
+  }
+</script>
+</body>
+</html>

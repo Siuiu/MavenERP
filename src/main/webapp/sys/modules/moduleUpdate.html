@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>模块管理</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="../../laydate/laydate.js"></script>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li><a href="../users/userList.html">系统管理</a></li>
+    <li><a href="moduleList.html">模块管理</a></li>
+    <li><a href="#">修改</a></li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>模块信息</span></div>
+  <ul class="forminfo">
+    <li>
+      <label>模块名称</label>
+      <input name="" type="text" value="用户管理" class="dfinput" id="module_rname"/>
+      <i>必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>父模块</label>
+      <select name="" class="dfselect" id="Fmodule">
+
+      </select>
+    </li>
+    <li>
+      <label>URL</label>
+      <input name="" type="text" value="sys/users/userList.html" id="url" class="dfinput"/>
+      <i>必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>&nbsp;</label>
+      <input name="" type="button" class="btn" id="sure" value="确认保存"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input name="" type="button" class="btn" value="返回"  onclick="window.history.go(-1);"/>
+    </li>
+  </ul>
+</div>
+<script type="text/javascript">
+
+  $(function () {
+    showFather();
+    var m_id=getParams("m_id");
+
+    $.ajax({
+      url:"module_updateShow",
+      type:"get",
+      data:{"m_id":m_id},
+      dataType: "json",
+      success:function (d) {
+          $("#module_rname").val(d.module_rname);
+          $("#url").val(d.module_murl);
+
+      }
+    });
+
+    $("#sure").click(function () {
+          $.ajax({
+            url:"updateModule",
+            type:"get",
+            data:{"module_rname":$("#module_rname").val(),"p_id":$("#Fmodule").val(),"url":$("#url").val(),"m_id":m_id},
+            dataType:"json",
+            success:function (d) {
+                  if(d!=0){
+                    alert("修改成功");
+                  }
+                  else{
+                    alert("修改失败");
+                  }
+            }
+
+          });
+    })
+
+  })
+  function showFather() {
+    $.ajax({
+      url:"showFatherModule",
+      type:"get",
+      dataType:"json",
+      success:function (d) {
+        var op=" <option value=''>请选择父模块</option>";
+        $.each(d,function (index,item) {
+          op+=" <option value='"+item.module_id+"'>"+item.module_rname+"</option>";
+        });
+        $("#Fmodule").append(op);
+      }
+    })
+  }
+
+  function getParams(key) {
+    var keyList = [];
+    var valueList = [];
+    var hrefStr = decodeURIComponent(window.location.href);
+    var strArray = hrefStr.split("?");
+    var paramStr = strArray[1];
+    if((paramStr != null) && (paramStr != null)) {
+      var paramArray = paramStr.split("&");
+      for(var i = 0; i <
+      paramArray.length; i++) {
+        var param = paramArray[i];
+        valueList.push(param.substr(param.indexOf("=") + 1));
+        keyList.push(param.substr(0, param.indexOf("=")));
+      }
+      for(var j = 0; j < keyList.length; j++) {
+        if(key == keyList[j]) {
+          return valueList[j];
+        }
+      }
+    }
+  }
+
+</script>
+</body>
+</html>

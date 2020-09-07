@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ERP仓储管理系统</title>
+   <style type="text/css">
+       body{
+           background-color:#df7611;
+           background-image:url(images/light.png);
+           background-repeat:no-repeat;
+           background-position:center top; overflow:hidden;
+       }
+   </style>
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<script language="JavaScript" src="js/jquery-1.8.2.min.js"></script>
+<script src="js/cloud.js" type="text/javascript"></script>
+
+<script language="javascript">
+	$(function(){
+    $('.loginbox').css({'position':'absolute','left':($(window).width()-692)/2});
+	$(window).resize(function(){  
+    $('.loginbox').css({'position':'absolute','left':($(window).width()-692)/2});
+    })  
+});  
+</script> 
+
+</head>
+
+<body>
+
+    <div id="mainBody">
+      <div id="cloud1" class="cloud"></div>
+      <div id="cloud2" class="cloud"></div>
+    </div>  
+
+
+	<div class="logintop">    
+        <span>ERP仓储管理系统</span>   
+    </div>
+    
+    <div class="loginbody">
+    
+    <span class="systemlogo"></span> 
+       
+    <div class="loginbox loginbox1">
+    <ul>
+
+    <li><input name="" type="text" class="loginuser"  id="uname" /></li>
+    <li><input name="" type="password" class="loginpwd" id="upassword" /></li>
+    <li class="yzm">
+    <span><input name="" id="checkCode" type="text" value='' onclick="JavaScript:this.value=''"/></span><cite id="code"></cite>
+    </li>
+    <li><input name="" type="button" class="loginbtn" value="登录"  />
+        <label><input name="" type="checkbox" value="" checked="checked" />记住密码</label>
+        <label><a href="#">忘记密码？</a></label>
+    </li>
+    </ul>
+    
+    
+    </div>
+    
+    </div>
+    
+    
+    <div class="loginbm">版权归南昌朝腾科技所有，仅供学习交流，勿用于任何商业用途</div>
+	<script type="text/javascript">
+        $(function () {
+            var code=['A','B','C','D','E','F','G','H','I','J','K','L','1','2','3','4','5','6'];
+            var checkCode="";
+            for(var i=0;i<5;i++){
+                var index=Math.floor(Math.random() * 17) + 1;
+                checkCode+=code[index];
+            }
+            $("#code").html(checkCode);
+
+            $("#code").click(function () {
+                checkCode="";
+                $("#code").html('');
+                for(var i=0;i<5;i++){
+                    var index=Math.floor(Math.random() * 17) + 1;
+                    checkCode+=code[index];
+                }
+                $("#code").html(checkCode);
+            });
+                $(".loginbtn").click(function () {
+                    var code="";
+                    code=$("#checkCode").val();
+                    if(code.toLowerCase()!=checkCode.toLowerCase()){
+                            alert("验证码输入错误");
+                    }else{
+                        $.ajax({
+                            url:"userlogin",
+                            type:"post",
+                            data:JSON.stringify({"uname":$("#uname").val(),"upassword": $("#upassword").val()}),
+                            contentType : "application/json;charset=UTF-8",
+                            success:function(d){
+                                if(d=="success"){
+                                    location.href="main.html";
+                                }
+                                else{
+                                    alert("登入失败");
+                                    location.href="login.html";
+                                }
+                            }
+
+                        })
+                    }
+
+
+                })
+        });
+
+
+    </script>
+    
+</body>
+
+</html>

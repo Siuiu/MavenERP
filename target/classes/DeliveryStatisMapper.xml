@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StatisDao">
+    <resultMap id="DeliveryStatisMap" type="com.erp.pojo.Ck_warehouse">
+        <result column="total_count" property="count"></result>
+        <association property="warehouse" javaType="com.erp.pojo.Warehouse">
+            <result column="c_name" property="c_name"></result>
+            <result column="c_Address" property="c_address"></result>
+        </association>
+        <association property="order" javaType="com.erp.pojo.Order">
+            <result column="total_money" property="orderMoney"></result>
+        </association>
+        <association property="users" javaType="com.erp.pojo.users">
+            <result column="uname" property="uname"></result>
+        </association>
+    </resultMap>
+    <select id="findDeliveryStatis" resultMap="DeliveryStatisMap">
+        SELECT w.c_name,w.id,users.uname,w.c_Address,
+        (SELECT COUNT(a.id) FROM (SELECT w.id
+        FROM ck_warehouse ck,warehouse w,users,erp.order o1
+        WHERE w.id = ck.warehouse_id
+        AND w.usre_id= users.U_id
+        AND o1.OrderId=ck.indent
+        AND ck.state=3)a WHERE a.id = w.id) total_count,
+        (SELECT SUM(a.orderMoney) FROM (SELECT w.id ,o1.OrderMoney
+        FROM ck_warehouse ck,warehouse w,users,erp.order o1
+        WHERE w.id = ck.warehouse_id
+        AND w.usre_id= users.U_id
+        AND o1.OrderId=ck.indent
+        AND ck.state=3)a WHERE a.id = w.id) total_money
+        FROM ck_warehouse ck,warehouse w,users,erp.order o1
+        WHERE w.id = ck.warehouse_id
+        AND w.usre_id= users.U_id
+        AND o1.OrderId=ck.indent
+        AND ck.state=3
+
+        <if test="province !='请选择省份'">
+            AND w.c_address LIKE concat('%',#{province},'%')
+        </if>
+        <if test="city !='请选择城市'">
+            AND w.c_address LIKE concat('%',#{city},'%')
+        </if>
+        <if test="wname !='' and wname != null">
+            AND w.c_name LIKE concat('%',#{wname},'%')
+        </if>
+        <if test="startTime !='' and startTime != null">
+            AND ck.c_date >= #{startTime}
+        </if>
+        <if test="endTime !='' and endTime != null">
+            AND ck.c_date &lt;= #{endTime}
+        </if>
+        <if test="1==1">
+              GROUP BY w.c_name
+        </if>
+    </select>
+</mapper>

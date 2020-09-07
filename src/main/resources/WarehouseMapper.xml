@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.WarehouseDao">
+    <resultMap id="invMap" type="com.erp.pojo.Inventory">
+        <result column="count" property="count"></result>
+        <result column="brand_name" property="brand_name"></result>
+        <result column="type_name" property="type_name"></result>
+        <result column="product_model" property="product_model"></result>
+        <result column="firm_name" property="firm_name"></result>
+        <result column="product_unit" property="product_unit"></result>
+        <result column="c_name" property="c_name"></result>
+
+    </resultMap>
+
+    <select id="showInvent" resultMap="invMap">
+        SELECT  w.c_name,
+        b.brand_name,
+        t.type_name,
+        p.product_model,
+        c.firm_name,
+        i.count,
+        p.product_unit
+        FROM inventory i,warehouse w,product p,c_firm c,brand b,TYPE t
+        WHERE i.warehouse_id = w.id
+        AND i.product_id=p.product_id
+        AND c.firm_id = p.firm_id
+        AND p.type_id = t.type_id
+        AND t.brand_id = b.brand_id
+        <if test="c_name!=null and c_name !='' ">
+            and w.c_name like #{c_name}
+        </if>
+        <if test="brand_name!=null and brand_name !='' ">
+            and b.brand_name like #{brand_name}
+        </if>
+        <if test="type_name!=null and type_name !='' ">
+            and t.type_name like #{type_name}
+        </if>
+        <if test="product_model!=null and product_model !='' ">
+            and p.product_model like #{product_model}
+        </if>
+    </select>
+
+    <select id="getALLwarehouse" resultType="java.lang.Integer">
+
+
+        SELECT COUNT(*)
+        FROM inventory i,warehouse w,product p,c_firm c,brand b,TYPE t
+        WHERE i.warehouse_id = w.id
+        AND i.product_id=p.product_id
+        AND c.firm_id = p.firm_id
+        AND p.type_id = t.type_id
+        AND t.brand_id = b.brand_id
+
+
+        <if test="c_name!=null and c_name !='' ">
+            and w.c_name like #{c_name}
+        </if>
+        <if test="brand_name!=null and brand_name !='' ">
+            and b.brand_name like #{brand_name}
+        </if>
+        <if test="type_name!=null and type_name !='' ">
+            and t.type_name like #{type_name}
+        </if>
+        <if test="product_model!=null and product_model !='' ">
+            and p.product_model like #{product_model}
+        </if>
+
+    </select>
+</mapper>

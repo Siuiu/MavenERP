@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StockDao">
+    <resultMap id="stockMap" type="com.erp.pojo.Rk_warehouse">
+        <id property="id" column="id"></id>
+        <result property="rk_indent" column="rk_indent"></result>
+        <result property="rk_date" column="rk_date"></result>
+        <result property="user_id" column="user_id"></result>
+        <result property="state" column="state"></result>
+        <association property="warehouse" javaType="com.erp.pojo.Warehouse">
+            <id column="id" property="id"></id>
+            <result property="c_name" column="c_name"></result>
+            <result property="usre_id" column="usre_id"></result>
+        </association>
+        <association property="purchase" javaType="com.erp.pojo.Purchase">
+            <result property="money" column="total_money"></result>
+        </association>
+        <association property="users" javaType="com.erp.pojo.users">
+            <result property="uname" column="uname"></result>
+        </association>
+    </resultMap>
+    <!-- 入库信息的展示 -->
+    <select id="stockList" resultMap="stockMap">
+        SELECT rk.*,wh.c_name,cp.total_money,wh.usre_id,u.uname
+        FROM rk_warehouse rk
+        LEFT JOIN warehouse wh
+        ON rk.warehouse_id = wh.id
+        LEFT JOIN c_purchase cp
+        ON rk.rk_indent = cp.purchase_id
+        INNER JOIN users u
+        ON wh.usre_id = u.U_id
+        <where>
+            <if test="usreId!=0">
+                and rk.user_Id = #{usreId}
+            </if>
+            <if test="c_name!=null and c_name!=''">
+                and wh.c_name like CONCAT('%',#{c_name},'%')
+            </if>
+            <if test="rk_indent!=null and rk_indent!=''">
+                and rk_indent like CONCAT('%',#{rk_indent},'%')
+            </if>
+            <if test="state!=null and state!=''">
+                and rk.state = #{state}
+            </if>
+        </where>
+    </select>
+    <!-- 入库信息的修改 -->
+    <update id="changeState">
+        UPDATE rk_warehouse SET state = #{state}
+        WHERE rk_indent = #{rk_indent}
+    </update>
+    <update id="changeCGState">
+        UPDATE c_purchase SET cg_state = #{cg_state}
+        WHERE purchase_id = #{purchase_id}
+    </update>
+    <update id="addInventory">
+        UPDATE inventory SET COUNT=COUNT + #{count}
+        WHERE product_id = #{product_id} AND warehouse_id = #{warehouse_id}
+    </update>
+    <update id="subtractInventory">
+        UPDATE inventory SET COUNT=COUNT - #{count}
+        WHERE product_id = #{product_id} AND warehouse_id = #{warehouse_id}
+    </update>
+    <select id="findInventory" resultType="java.lang.Integer">
+        SELECT COUNT FROM inventory
+        WHERE product_id = #{product_id} AND warehouse_id = #{warehouse_id}
+    </select>
+    <select id="findWarehouse" resultType="com.erp.pojo.Warehouse">
+        SELECT c_name,id FROM warehouse WHERE state='1'
+    </select>
+    <insert id="addDelivered" parameterType="com.erp.pojo.Rk_warehouse">
+        INSERT INTO rk_warehouse (rk_indent,warehouse_id,rk_date,user_id,state) VALUES (#{indent},#{id},NOW(),#{user_id},'1')
+    </insert>
+    <update id="updateCg_state" parameterType="com.erp.pojo.Purchase">
+        UPDATE c_purchase SET cg_state = 1 WHERE purchase_id =#{indent}
+    </update>
+    <resultMap id="purchaseMap" type="com.erp.pojo.Purchase">
+        <id property="id" column="purchase_id"></id>
+    </resultMap>
+    <select id="findCgd" resultMap="purchaseMap">
+        SELECT purchase_id FROM c_purchase WHERE cg_state=0 AND check_status='审核通过'
+    </select>
+</mapper>

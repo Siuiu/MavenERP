@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>模块管理</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+  <link href="../../css/pagination.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/jquery.js"></script>
+<script type="text/javascript"  src="../../js/jquery-1.8.2.min.js"></script>
+  <script type="text/javascript"  src="../../js/jquery.pagination.js"></script>
+<script type="text/javascript">
+function tipOpen(content) {
+	$(".tipright p").text(content);
+	$("#tip").fadeIn(200);
+}
+function tipClose() {
+	$("#tip").fadeOut(200);
+}
+</script>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li><a href="../users/userList.html">系统管理</a></li>
+    <li><a href="#">模块管理</a></li>
+  </ul>
+</div>
+<div class="rightinfo">
+  <form action="" method="post">
+    <ul class="tools">
+      <li> <label>模块名称:</label>
+        <input type="text" id="module_rname"/>
+      </li>
+
+      <li class="subBut" id="search"><img src="../../images/t06.png" />查询</li>
+      <li class="subBut" id="add" onclick="window.location.href='moduleAdd.html'"><img src="../../images/t01.png" />添加</li>
+    </ul>
+    <table class="tablelist">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>模块名称</th>
+          <th>父模块</th>
+          <th>URL</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="modulelist">
+
+      </tbody>
+    </table>
+
+  </form>
+  <div class="m-style"></div>
+  <!-- 提示框 -->
+  <div id="tip" class="tip">
+    <div class="tiptop"><span>提示信息</span><a onclick="tipClose()"></a></div>
+    <div class="tipinfo"> <span><img src="../../images/ticon.png" /></span>
+      <div class="tipright">
+        <p></p>
+        <cite>如果是请点击确定按钮 ，否则请点取消。</cite> </div>
+    </div>
+    <div class="tipbtn">
+      <input name="" type="button"  class="sure" value="确定" onclick="tipClose()" />
+      &nbsp;
+      <input name="" type="button"  class="cancel" value="取消" onclick="tipClose()" />
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+	$('.tablelist tbody tr:odd').addClass('odd');
+
+	$(function () {
+      $.ajax({
+        url:"findwho",
+        type:"get",
+        dataType:"json",
+        success:function (d) {
+          modulelist(d.job_id);
+        }
+      });
+      $("#search").click(function () {
+        modulelist();
+      })
+
+      $("#modulelist").delegate("#res","click",function () {
+        var id=$(this).attr("name");
+        $(".sure").attr("id","sureR");
+        $("#sureR").attr("name",id);
+
+        tipOpen("是否确认恢复模块id为"+id+"此条信息？");
+      })
+
+      $("#modulelist").delegate("#remove","click",function () {
+        var id=$(this).attr("name");
+        $(".sure").attr("id","removeR");
+        $("#removeR").attr("name",id);
+
+        tipOpen("是否确认禁用模块id为"+id+"此条信息？");
+      });
+
+
+      $("#tip").delegate("#removeR","click",function () {
+        var  m_id=$("#removeR").attr("name");
+        $.ajax({
+          url:"removeR",
+          type:"get",
+          data:{"m_id":m_id},
+          dataType: "json",
+          success:function (d) {
+            if(d!=0){
+              $("#tip").fadeOut(200);
+              window.location.reload();
+            }
+            else{
+              alert("禁用失败");
+            }
+          }
+        });
+      })
+
+      $("#tip").delegate("#sureR","click",function () {
+        var  m_id=$("#sureR").attr("name");
+        $.ajax({
+          url:"sureR",
+          type:"get",
+          data:{"m_id":m_id},
+          dataType: "json",
+          success:function (d) {
+            if(d!=0){
+              $("#tip").fadeOut(200);
+              window.location.reload();
+            }
+            else{
+              alert("恢复失败");
+            }
+          }
+        });
+      });
+
+
+    })
+
+function modulelist(id) {
+	  var module_rname=$("#module_rname").val();
+    $.ajax({
+      url:"modulelist",
+      type:"get",
+      data:{"module_rname":module_rname,"pageIndex":1},
+      dataType:"json",
+      success:function (d) {
+          var tr="";
+        $("#modulelist tr").remove();
+          $.each(d.list,function (index,item) {
+            tr+="<tr>";
+                tr+="<td>"+(index+1)+"</td>";
+            tr+="  <td>"+item.module_rname+"</td>";
+            tr+=" <td>"+(item.p_name==null? "无":item.p_name)+"</td>";
+            tr+="  <td>"+item.module_murl+"</td>";
+            tr+="   <td>"+item.module_state+"</td>";
+            tr+="  <td>";
+            if(id==21){
+              $("#add").remove();
+            }
+            else{
+              if(item.module_state=="正常"){
+                tr+="  <a href='moduleUpdate.html?m_id="+item.module_id+"' class='tablelink'>修改</a>";
+                tr+="  <a href='javascript:void(0);' class='tablelink'  id='remove' name='"+item.module_id+"' >禁用</a>";
+              }
+              else{
+                tr+="  <a href='javascript:void(0);' class='tablelink' id='res' name='"+item.module_id+"'>恢复</a>";
+              }
+            }
+
+            tr+=" </td>";
+            tr+=" </tr>";
+          });
+          $("#modulelist").append(tr);
+        $('.m-style').pagination({
+          totalData: d.rowCount,
+          showData: d.pageSize,
+          mode: 'fixed',
+          coping: true,
+          homePage: '首页',
+          endPage: '末页',
+          prevContent: '上页',
+          nextContent: '下页',
+          callback: function (api) {
+            //当前的页码
+            getmodulelist(api.getCurrent(),id);
+
+          }
+        })
+      }
+    });
+
+}
+
+    function getmodulelist(pageIndex,id) {
+      var module_rname=$("#module_rname").val();
+      $.ajax({
+        url:"modulelist",
+        type:"get",
+        data:{"module_rname":module_rname,"pageIndex":pageIndex},
+        dataType:"json",
+        success:function (d) {
+          var tr="";
+          $("#modulelist tr").remove();
+          $.each(d.list,function (index,item) {
+            tr+="<tr>";
+            tr+="<td>"+(index+1)+"</td>";
+            tr+="  <td>"+item.module_rname+"</td>";
+            tr+=" <td>"+(item.p_name==null? "无":item.p_name)+"</td>";
+            tr+="  <td>"+item.module_murl+"</td>";
+            tr+="   <td>"+item.module_state+"</td>";
+            tr+="  <td>";
+            if(id==21){
+              $("#add").remove();
+            }
+            else{
+              if(item.module_state=="正常"){
+                tr+="  <a href='moduleUpdate.html?m_id="+item.module_id+"' class='tablelink'>修改</a>";
+                tr+="  <a href='javascript:void(0);' class='tablelink'  id='remove' name='"+item.module_id+"' >禁用</a>";
+              }
+              else{
+                tr+="  <a href='javascript:void(0);' class='tablelink' id='res' name='"+item.module_id+"'>恢复</a>";
+              }
+            }
+            tr+=" </td>";
+            tr+=" </tr>";
+          });
+          $("#modulelist").append(tr);
+
+        }
+      });
+
+    }
+
+</script>
+</body>
+</html>

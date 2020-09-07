@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StatisDao">
+    <resultMap id="PurchaseStatisMap" type="com.erp.pojo.Purchase">
+
+        <result column="total_money" property="money"></result>
+        <result column="total_count" property="total_count"></result>
+        <association property="cfirm" javaType="com.erp.pojo.Cfirm">
+            <id column="firm_id" property="id"></id>
+            <result column="firm_name" property="firm_name"></result>
+            <result column="firm_founder" property="firm_founder"></result>
+            <result column="city" property="firm_city"></result>
+        </association>
+    </resultMap>
+    <select id="findPurchaseStatis" resultMap="PurchaseStatisMap">
+        SELECT c_f.firm_name,c_f.firm_founder,c_f.firm_id,
+        CONCAT(p1.p_name,city.c_name) city,
+        (SELECT COUNT(*) FROM (SELECT c_f.firm_id
+        FROM details d,product p,c_firm c_f,c_purchase c_p
+        WHERE d.product_id=p.product_id
+        AND p.firm_id=c_f.firm_id
+        AND d.purchase_id =c_p.purchase_id
+        AND c_p.check_status='审核通过'
+        GROUP BY c_p.purchase_id) a WHERE a.firm_id = c_f.firm_id)total_count,
+        (SELECT SUM(a.total_money) FROM (SELECT c_p.total_money,c_f.firm_id
+        FROM details d,product p,c_firm c_f,c_purchase c_p
+        WHERE d.product_id=p.product_id
+        AND p.firm_id=c_f.firm_id
+        AND d.purchase_id =c_p.purchase_id
+        AND c_p.check_status='审核通过'
+        GROUP BY c_p.purchase_id) a WHERE a.firm_id = c_f.firm_id)total_money
+        FROM c_purchase c_p,details d,product p,c_firm c_f,province p1,city
+        WHERE c_p.purchase_id = d.purchase_id
+        AND d.product_id=p.product_id
+        AND  p.firm_id=c_f.firm_id
+        AND city.id = c_f.firm_city
+        AND p1.id = city.p_id
+        AND c_p.check_status='审核通过'
+        <if test="province !='请选择省份'">
+           AND CONCAT(p1.p_name,city.c_name) LIKE concat('%',#{province},'%')
+       </if>
+       <if test="city !='请选择城市'">
+           AND CONCAT(p1.p_name,city.c_name) LIKE concat('%',#{city},'%')
+       </if>
+       <if test="cfirmname !='' and cfirmname != null">
+           AND c_f.firm_name LIKE concat('%',#{cfirmname},'%')
+       </if>
+       <if test="startTime !='' and startTime != null">
+           AND c_p.purchase_time >= #{startTime}
+       </if>
+       <if test="endTime !='' and endTime != null">
+           AND c_p.purchase_time &lt;= #{endTime}
+       </if>
+        <if test="1==1">
+            GROUP BY c_f.firm_name
+        </if>
+    </select>
+</mapper>

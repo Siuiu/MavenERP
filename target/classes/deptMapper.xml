@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.DeptDao">
+
+    <resultMap id="deptMap" type="com.erp.pojo.dept">
+        <id property="Dept_id" column="Dept_id"></id>
+        <result property="Dept_name" column="dept_name" />
+        <result property="Dept_state" column="dept_state" />
+
+            <association property="pro" javaType="com.erp.pojo.province">
+                <result property="p_name" column="p_name" />
+            </association>
+        <association property="city" javaType="com.erp.pojo.city">
+            <result property="c_name" column="c_name" />
+        </association>
+    </resultMap>
+
+
+    <select id="deptlist" resultMap="deptMap">
+SELECT * FROM dept,province,city WHERE dept.C_id=city.id AND dept.P_id=province.id
+        <if test="dept_name !=null and dept_name!='' ">
+            AND dept.dept_name=#{dept_name}
+        </if>
+        <if test="p_id !=null and p_id !='' ">
+            AND dept.p_id=#{p_id}
+        </if>
+        <if test="c_id !=null and c_id !='' ">
+            AND dept.c_id=#{c_id}
+        </if>
+    </select>
+
+
+   <update id="sureR" parameterType="com.erp.pojo.dept" >
+      UPDATE dept SET dept_state="正常" WHERE dept_id=#{dept_id}
+   </update>
+
+    <update id="removeR" parameterType="com.erp.pojo.dept" >
+      UPDATE dept SET dept_state="不正常" WHERE dept_id=#{dept_id}
+   </update>
+
+    <select id="dept_updateshowdept" resultType="com.erp.pojo.dept">
+        SELECT * FROM dept WHERE dept_id=#{dept_id}
+    </select>
+
+    <select id="showCity" resultType="com.erp.pojo.city">
+        SELECT * FROM city WHERE p_id=#{p_id}
+    </select>
+
+
+    <insert id="addDept" parameterType="com.erp.pojo.dept">
+        INSERT INTO dept(dept_id,dept_name,dept_state,p_id,c_id)
+        VALUES(#{dept_id},
+                #{dept_name},
+                '正常',
+                #{p_id},
+                #{c_id})
+    </insert>
+
+    <update id="updateDept" parameterType="com.erp.pojo.dept">
+        UPDATE dept SET dept_name=#{dept_name},
+                        p_id=#{p_id},
+                        c_id=#{c_id}
+         WHERE dept_id=#{dept_id}
+
+    </update>
+
+   <!--以下是职位模块 -->
+    <resultMap id="jobMap" type="com.erp.pojo.job">
+        <id column="job_id" property="job_id"></id>
+        <result column="job_name" property="job_name"></result>
+        <result column="job_state" property="job_state"></result>
+        <association property="dept" javaType="com.erp.pojo.dept">
+            <result column="dept_name" property="dept_name"></result>
+        </association>
+    </resultMap>
+
+    <select id="joblist" resultMap="jobMap" >
+      SELECT * FROM job,dept WHERE job.Job_dept_id=dept.Dept_id
+        <if test="job_name !=null and job_name !='' ">
+            AND job.job_name=#{job_name}
+        </if>
+        <if test="dept_id !=null and dept_id !='' ">
+            AND job.Job_dept_id=#{dept_id}
+        </if>
+        LIMIT #{pageIndex},5
+    </select>
+
+<select id="getjobCount" resultType="java.lang.Integer">
+    SELECT COUNT(*) FROM job,dept WHERE job.Job_dept_id=dept.Dept_id
+    <if test="job_name !=null and job_name !='' ">
+        AND job.job_name=#{job_name}
+    </if>
+    <if test="dept_id !=null and dept_id !='' ">
+        AND job.Job_dept_id=#{dept_id}
+    </if>
+</select>
+
+    <insert id="addJob" parameterType="com.erp.pojo.job">
+        insert into job(job_name,job_state,job_dept_id)
+        values (#{job_name},
+                '正常',
+                #{dept_id}
+        )
+    </insert>
+
+<select id="job_updateShowJob" resultType="com.erp.pojo.job">
+    select * from job where job_id=#{job_id}
+</select>
+
+<update id="jobUpdate" parameterType="com.erp.pojo.job">
+    update job set
+    job_name=#{job_name},
+    job_dept_id=#{dept_id}
+    where job_id=#{job_id}
+</update>
+
+<update id="removeJob" parameterType="com.erp.pojo.job">
+    update job set
+    job_state='不正常'
+    where job_id=#{job_id}
+</update>
+
+<update id="sureJob" parameterType="com.erp.pojo.job">
+    update job set
+    job_state='正常'
+    where job_id=#{job_id}
+</update>
+
+
+
+<select id="changeJobper_Show" resultType="com.erp.pojo.module">
+    SELECT * FROM module WHERE module_pid=0
+</select>
+
+    <select id="findAllSunModule" resultType="com.erp.pojo.module">
+        SELECT * FROM module WHERE module_pid=#{p_id}
+    </select>
+
+    <insert id="addPer" parameterType="com.erp.pojo.permission">
+        INSERT INTO permission(comrid,compid,comstate)VALUES(#{job_id},#{p_id},1)
+    </insert>
+
+<delete id="delePer" parameterType="com.erp.pojo.permission">
+   DELETE  FROM permission WHERE comrid=#{job_id}
+</delete>
+
+<select id="find_dept_id"     resultType="java.lang.Integer">
+    SELECT COUNT(*) FROM dept WHERE dept_id=#{dept_id}
+</select>
+
+    <select id="find_dept_name"     resultType="java.lang.Integer">
+   SELECT COUNT(*) FROM dept WHERE dept_name=#{dept_name}
+</select>
+
+    <resultMap id="showMap" type="com.erp.pojo.permission">
+        <collection property="setmodule" javaType="com.erp.pojo.module">
+            <id column="module_id" property="module_id"></id>
+            <result property="module_rname" column="module_rname"></result>
+        </collection>
+    </resultMap>
+
+    <select id="findpersion" resultMap="showMap">
+SELECT * FROM permission p,module m WHERE p.compid=m.module_id AND p.comrid=#{job_id}
+    </select>
+
+</mapper>

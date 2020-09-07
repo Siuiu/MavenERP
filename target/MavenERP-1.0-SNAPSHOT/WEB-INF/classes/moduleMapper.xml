@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.moduleDao">
+
+
+
+    <select id="modulelist" resultType="com.erp.pojo.module">
+   SELECT  m.*,(SELECT ms.module_rname FROM module ms WHERE m.module_pid=ms.module_id ) p_name  FROM module m where 1=1
+<if test="module_rname !=null and module_rname !='' ">
+    and m.module_rname like #{module_rname}
+</if>
+LIMIT #{pageIndex},5
+    </select>
+
+    <select id="getModuleCount" resultType="java.lang.Integer">
+        SELECT  COUNT(*)   FROM module m where 1=1
+        <if test="module_rname !=null and module_rname !='' ">
+            and m.module_rname like #{module_rname}
+        </if>
+    </select>
+
+    <select id="showFatherModule" resultType="com.erp.pojo.module">
+        SELECT * FROM module WHERE module_pid=0
+    </select>
+
+    <insert id="addModule" parameterType="com.erp.pojo.module">
+       INSERT INTO module(module_rname,module_pid,module_murl,module_state)
+       VALUES(#{module_rname},#{p_id},#{url},'正常')
+    </insert>
+
+    <select id="module_updateShow" resultType="com.erp.pojo.module">
+         SELECT * FROM module WHERE module_id=#{m_id}
+    </select>
+
+    <update id="updateModule" parameterType="com.erp.pojo.module">
+        update module set module_rname=#{module_rname},module_pid=#{p_id},module_murl=#{url}
+        where module_id=#{m_id}
+
+    </update>
+
+    <update id="removeModule" parameterType="com.erp.pojo.module">
+        update module set module_state='不正常' where module_id=#{m_id}
+    </update>
+
+    <update id="sureModule" parameterType="com.erp.pojo.module">
+        update module set module_state='正常' where module_id=#{m_id}
+    </update>
+
+</mapper>

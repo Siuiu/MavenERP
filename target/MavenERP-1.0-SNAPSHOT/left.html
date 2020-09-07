@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+    <script src="js/jquery-1.8.2.min.js"></script>
+</head>
+
+<body style="background:#fff3e1;">
+	<div class="lefttop">
+    	<span></span><a href="index.html" target="rightFrame">首页</a>
+    </div>
+    <dl class="leftmenu" id="leftmeun">
+
+    
+    </dl>
+
+</body>
+
+<script type="text/javascript">
+
+    $(function(){
+        //导航切换
+        $('.menuson').delegate('.header','click',function(){
+            var $parent = $(this).parent();
+            $(".menuson>li.active").not($parent).removeClass("active open").find('.sub-menus').hide();
+
+            $parent.addClass("active");
+            if(!!$(this).next('.sub-menus').size()){
+                if($parent.hasClass("open")){
+                    $parent.removeClass("open").find('.sub-menus').hide();
+                }else{
+                    $parent.addClass("open").find('.sub-menus').show();
+                }
+            }
+        });
+// 三级菜单点击
+        $(".sub-menus").delegate("li","click",function(e){
+            $(".sub-menus li.active").removeClass("active")
+            $(this).addClass("active");
+        });
+
+
+        $(".leftmenu").delegate(".title","click",function(){
+            var $ul = $(this).next('ul');
+            $('dd').find('.menuson').slideUp();
+            if($ul.is(':visible')){
+                $(this).next('.menuson').slideUp();
+            }else{
+                $(this).next('.menuson').slideDown();
+            }
+        });
+
+    })
+    $(function () {
+        $.ajax({
+            url:"per",
+            type:"get",
+            dataType:"json",
+            success:function (d) {
+                var dd="";
+                if(d==null){
+                    alert("您没有权限操作，请联系管理员");
+                }
+                else{
+                    $.each(d,function (index,item) {
+                        dd+="<dd>";
+                        dd+="<div class='title'>"+item.module.module_rname+"</div>";
+                        dd+="<ul class='menuson'>";
+                        $.each(item.module.setmodel,function (i,mo) {
+                            dd+="<li><cite></cite><a href='"+mo.module_murl+"' target='rightFrame'>"+mo.module_rname+"</a><i></i></li>";
+                        });
+                        dd+="</ul>";
+                        dd+="</dd>";
+
+
+                    });
+                    $("#leftmeun").append(dd);
+                }
+
+
+            }
+
+        });
+    })
+
+
+</script>
+</html>

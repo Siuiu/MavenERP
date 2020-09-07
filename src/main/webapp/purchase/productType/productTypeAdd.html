@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li>采购管理</li>
+    <li>商品类型管理</li>
+    <li>添加</li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>商品类型信息</span></div>
+  <ul class="forminfo">
+    <li>
+      <label>品牌名称</label>
+      <select class="dfselect" id="bname">
+
+        </select>
+      <i>必选</i>
+    </li>
+    <li>
+      <label>商品类型名称</label>
+      <input name="" type="text" class="dfinput" id="tname"/>
+      <i>必填，不能超过50个字符</i>
+    </li>
+    <li>
+      <label>状态</label>
+      <select class="dfselect" id="status">
+          <option value="1">可用</option>
+          <option value="0">不可用</option>
+        </select>
+      <i>必选</i>
+    </li>
+    <li>
+      <label>创建人</label>
+      <input name="" type="text" value="" id="uName" readonly="readonly" class="roinput" />
+      <i>不能编辑</i>
+    </li>
+    <li>
+      <label>创建时间</label>
+      <input name="" type="text" value="" id="dateTime" readonly="readonly" class="roinput" />
+      <i>不能编辑</i>
+    </li>
+    <li>
+      <label>&nbsp;</label>
+      <input name="" type="button" class="btn" value="确定" id="addType"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input name="" type="button" class="btn" value="返回" onclick="window.location.href='productTypeList.html'"/>
+    </li>
+  </ul>
+</div>
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript">
+  var brandHmtl=""
+  $.ajax({
+    type:"get",
+    url:"../../Brand/seBrandAllInfo",
+    dataType:"json",
+    success:function(b){
+      $.each(b,function (index,brand) {
+          brandHmtl+="<option value='"+brand.id+"'>"+brand.name+"</option>";
+      })
+      $("#bname").html(brandHmtl)
+    }
+  })
+  var time=new Date();
+  var dateTime=time.getFullYear()+"-"+(time.getMonth()+1+"-")+time.getDate()+" "+time.getHours()+":"+time.getMinutes()+":"+time.getSeconds();
+  $("#dateTime").val(dateTime);
+  $.ajax({
+    type:"get",
+    url:"../../purchase/getUser",
+    dataType:"json",
+    success:function(d){
+      $("#uName").val(d.uname);
+    }
+  });
+  $("#addType").click(function () {
+    var bid=$("#bname").val();
+    var tname=$("#tname").val();
+    var status=$("#status").val();
+    if(bid==""||bid==null||bid==undefined){
+      alert("请选择品牌名");
+      return;
+    }
+    if(status==""||status==null||status==undefined){
+      alert("请选择状态");
+      return;
+    }
+    if(tname==""||tname==null||tname==undefined){
+      alert("请输入类型名");
+      return;
+    }
+    $.ajax({
+      type:"post",
+      url:"../../productType/addType",
+      data:{"bid":bid,"status":status,"tname":tname},
+      dataType:"json",
+      success:function(d){
+        if(d>=1){
+          window.location.href='productTypeList.html'
+        }else {
+          alert(添加失败)
+        }
+      }
+    });
+  })
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文本</title>
+  <link href="../../css/style.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="../../css/pagination.css">
+  <script type="text/javascript" src="../../js/jquery.js"></script>
+  <script src="../../js/jquery-1.8.2.min.js"></script>
+  <script src="../../js/jquery.pagination.js"></script>
+</head>
+
+ <body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li>仓库管理</li>
+    <li>出库管理</li>
+    <li>基本内容</li>
+  </ul>
+</div>
+<div class="rightinfo">
+  <form action="" method="post">
+    <ul class="tools">
+      <li>仓库名称:
+        <input type="text" id="c_name"/>
+      </li>
+      <li>商品品牌:
+        <input type="text" id="brand_name"/>
+      </li>
+      <li>商品类型:
+        <input type="text" id="type_name"/>
+      </li>
+      <li>商品名称:
+        <input type="text" id="product_model"/>
+      </li>
+      <li class="subBut" id="search" ><img src="../../images/t06.png" />查询</li>
+    </ul>
+    <table class="tablelist">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>仓库名称</th>
+          <th>商品品牌</th>
+          <th>商品类型</th>
+          <th>商品名称</th>
+          <th>厂商名称</th>
+          <th>商品数量</th>
+          <th>单位</th>
+        </tr>
+      </thead>
+        <tbody id="inventlist">
+
+        </tbody>
+    </table>
+    <div class="pagin">
+      <div class="message">共<i class="blue" id="pageCount">3</i>条记录，当前显示第&nbsp;<i class="blue" id="pageIndex">1&nbsp;</i>页</div>
+    </div>
+  </form>
+
+    <div class="m-style"></div>
+</div>
+<script type="text/javascript">
+	$('.tablelist tbody tr:odd').addClass('odd');
+</script>
+<script type="text/javascript">
+  $(function () {
+    var rowCount;
+    var pageSize;
+    showinv();
+    page(rowCount,pageSize);
+    $("#search").click(function () {
+      showinv();
+      page(rowCount,pageSize);
+    });
+
+    function showinv() {
+      var c_name = $("#c_name").val();
+      var brand_name = $("#brand_name").val();
+      var type_name = $("#type_name").val();
+      var product_model= $("#product_model").val();
+
+      $.ajax({
+        url: "inventlist",
+        type: "get",
+        data: {"c_name": c_name, "brand_name": brand_name,"type_name":type_name,"product_model":product_model, "pageIndex": 1},
+        dataType: "json",
+        async:false,
+        success: function (d) {
+          rowCount = d.total;
+          pageSize = d.pageSize;
+          var tr = "";
+          $("#inventlist tr").remove();
+          $.each(d.list, function (index, item) {
+            tr += "<tr>";
+            tr += "<td>" + (index + 1) + "</td>";
+            tr += " <td>" + item.c_name+ "</td>";
+            tr += " <td>" + item.brand_name + "</td>";
+            tr += " <td>" + item.type_name + "</td>";
+            tr += " <td>" + item.product_model + "</td>";
+            tr += " <td>" + item.firm_name+ "</td>";
+            tr += " <td>" + item.count + "</td>";
+            tr += " <td>" + item.product_unit+ "</td>";
+            tr += " </tr>";
+          });
+          $("#inventlist").append(tr);
+        }
+      });
+    }
+
+    function getshowinv(pageIndex) {
+      var c_name = $("#c_name").val();
+      var brand_name = $("#brand_name").val();
+      var type_name = $("#type_name").val();
+      var product_model= $("#product_model").val();
+      $.ajax({
+        url: "inventlist",
+        type: "get",
+        data: {"c_name": c_name, "brand_name": brand_name,"type_name":type_name,"product_model":product_model, "pageIndex": pageIndex},
+        dataType: "json",
+        success: function (d) {
+          var tr = "";
+          rowCount = d.rowCount;
+          pageSize = d.pageSize;
+          $("#inventlist tr").remove();
+          $.each(d.list, function (index, item) {
+            tr += "<tr>";
+            tr += "<td>" + (index + 1) + "</td>";
+            tr += " <td>" + item.c_name+ "</td>";
+            tr += " <td>" + item.brand_name + "</td>";
+            tr += " <td>" + item.type_name + "</td>";
+            tr += " <td>" + item.product_model + "</td>";
+            tr += " <td>" + item.firm_name+ "</td>";
+            tr += " <td>" + item.count + "</td>";
+            tr += " <td>" + item.product_unit+ "</td>";
+            tr += " </tr>";
+          });
+          $("#inventlist").append(tr);
+
+        }
+      });
+    }
+    function page(rowCount,pageSize) {
+      $('.m-style').pagination({
+        totalData: rowCount,
+        showData: pageSize,
+        mode: 'fixed',
+        coping: true,
+        homePage: '首页',
+        endPage: '末页',
+        prevContent: '上页',
+        nextContent: '下页',
+        callback: function (api) {
+          //当前的页码
+          getshowinv(api.getCurrent());
+
+        }
+      })
+    }
+  })
+
+
+
+</script>
+</body>
+</html>

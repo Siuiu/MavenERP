@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.CityDao">
+    <resultMap id="cityMap" type="com.erp.pojo.city">
+        <id property="id" column="id"></id>
+        <result property="p_id" column="p_id"></result>
+        <result property="c_name" column="c_name"></result>
+        <result property="c_number" column="c_number"></result>
+        <association property="province" javaType="com.erp.pojo.province">
+            <id property="id" column="id"></id>
+            <result property="p_name" column="p_name"></result>
+            <result property="p_number" column="p_number"></result>
+        </association>
+    </resultMap>
+   <!-- <select id="areaList" resultMap="cityMap">
+        SELECT
+        p.id as pid,
+        p.p_name,
+        c.id as cid,
+        c.c_name
+        FROM city c
+        inner join province p
+        on p.id = c.p_id
+        <where>
+            <if test="p_name!=''and p_name!= null">
+                and p_name like #{p_name}
+            </if>
+            <if test="c_name!=''and c_name != null">
+                and c_name like #{c_name}
+            </if>
+        </where>
+    </select>
+-->
+<resultMap id="proMap" type="com.erp.pojo.city">
+    <result column="c_number" property="c_number"></result>
+    <result column="c_name" property="c_name"></result>
+    <association property="pro" javaType="com.erp.pojo.province">
+        <result column="id" property="id"></result>
+        <result column="p_name" property="p_name"></result>
+    </association>
+</resultMap>
+
+    <select id="showProvince" resultMap="proMap">
+        SELECT * FROM province,city WHERE province.id=city.p_id
+        <if test="p_name!=null and p_name !='' ">
+            and province.p_name like #{p_name}
+        </if>
+        <if test="c_name!=null and c_name !='' ">
+            and city.c_name like #{c_name}
+        </if>
+        LIMIT #{pageIndex},5
+    </select>
+
+    <select id="getALLcity" resultType="java.lang.Integer">
+        SELECT count(*) FROM province,city WHERE province.id=city.p_id
+        <if test="p_name!=null and p_name !='' ">
+            and province.p_name like #{p_name}
+        </if>
+        <if test="c_name!=null and c_name !='' ">
+            and city.c_name like #{c_name}
+        </if>
+    </select>
+</mapper>

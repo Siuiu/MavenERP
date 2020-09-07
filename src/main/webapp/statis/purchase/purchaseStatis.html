@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/jquery.js"></script>
+<link href="../../css/pagination.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li>数据统计</li>
+    <li>厂商采购统计</li>
+    <li>基本内容</li>
+  </ul>
+</div>
+<div class="rightinfo">
+  <form action="" method="post">
+    <ul class="tools">
+      <li> 所属区域：
+        <select>
+          <option>请选择省份</option>
+          <option>北京</option>
+          <option>江苏</option>
+          <option>天津</option>
+        </select>
+        <select>
+          <option>请选择城市</option>
+          <option>北京</option>
+          <option>南京</option>
+          <option>天津</option>
+        </select>
+      </li>
+      <li> 厂商名称:
+        <input type="text" />
+      </li>
+      <li> 时间:
+        <input type="text" />-<input type="text" />
+      </li>
+
+      <li class="subBut"><img src="../../images/t06.png" />查询</li>
+    </ul>
+    <table class="tablelist">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>厂商名称</th>
+          <th>负责人</th>
+          <th>所属区域</th>
+          <th>采购单数量</th>
+          <th>金额</th>
+          <th>采购单明细</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>阿里巴巴</td>
+          <td>马云</td>
+          <td>江苏南京</td>
+          <td>5</td>
+          <td>￥9,876,582</td>
+          <td>
+          	<a href="purchaseView.html" class="tablelink">查看详情</a>
+          </td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>联想科技</td>
+          <td>柳传志</td>
+          <td>江苏南京</td>
+          <td>8</td>
+          <td>￥9,876,582</td>
+          <td>
+          	<a href="purchaseView.html" class="tablelink">查看详情</a>
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>腾讯公司</td>
+          <td>马化腾</td>
+          <td>江苏南京</td>
+          <td>5</td>
+          <td>￥9,876,582</td>
+          <td>
+          	<a href="purchaseView.html" class="tablelink">查看详情</a>
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>搜狐新闻</td>
+          <td>张朝阳</td>
+          <td>江苏南京</td>
+          <td>8</td>
+          <td>￥9,876,582</td>
+          <td>
+          	<a href="purchaseView.html" class="tablelink">查看详情</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagin">
+
+      <div class="m-style"></div>
+    </div>
+  </form>
+</div>
+<script type="text/javascript">
+	$('.tablelist tbody tr:odd').addClass('odd');
+</script>
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="../../js/jquery.pagination.js"></script>
+<script type="text/javascript" src="../zyx_js/purchaseStatis.js"></script>
+</body>
+</html>

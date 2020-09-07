@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StorageDao">
+    <resultMap id="selectStorage" type="com.erp.pojo.Warehouse">
+        <id column="wid" property="id"/>
+        <result column="wname" property="c_name"/>
+        <result column="wphone" property="phone"/>
+        <result column="waddress" property="c_address"/>
+        <result column="wstate" property="state"/>
+        <result column="wtime" property="creation_time"/>
+        <result column="wdetails" property="details"/>
+        <result column="wusre" property="usre_id"/>
+        <association property="users" javaType="com.erp.pojo.users">
+            <result column="uid" property="u_id"/>
+            <result column="uname" property="uname"/>
+        </association>
+        <association property="user" javaType="com.erp.pojo.users">
+            <result column="usid" property="u_id"/>
+            <result column="usname" property="uname"/>
+        </association>
+        <association property="province" javaType="com.erp.pojo.province">
+            <result column="pid" property="id"/>
+            <result column="pname" property="p_name"/>
+        </association>
+        <association property="city" javaType="com.erp.pojo.city">
+            <result column="cid" property="id"/>
+            <result column="cname" property="c_name"/>
+        </association>
+    </resultMap>
+    <select id="findAll" resultMap="selectStorage">
+        SELECT w.id wid,w.`c_name` wname,u.`uname` uname,
+        w.`phone` wphone,p.`p_name` pname,c.`c_name` cname,
+        w.`state` wstate,w.`creation_time` wtime,
+        us.`uname` usname
+         FROM warehouse w,users u,users us,province p,city c
+         WHERE w.`usre_id`=u.`U_id`
+          AND w.`user_id`=us.`U_id`
+          AND w.`province_id`=p.`id`
+          AND w.`city_id`=c.`id`
+          <if test="ck_name !=''">
+              AND w.`c_name` LIKE concat('%',#{ck_name},'%')
+          </if>
+          <if test="p_name != '请选择省份'">
+              AND w.`province_id` LIKE concat('%',#{p_name},'%')
+          </if>
+          <if test="c_name != '请选择城市'">
+              AND w.`city_id` LIKE concat('%',#{c_name},'%')
+          </if>
+    </select>
+    <select id="viewDetails" resultMap="selectStorage">
+        SELECT w.id wid,w.`c_name` wname,u.`uname` uname,p.`id` pid,c.`id` cid,
+        w.`phone` wphone,p.`p_name` pname,c.`c_name` cname,w.`usre_id` wusre,
+        w.`state` wstate,w.`creation_time` wtime,w.c_address waddress,u.`U_id` uid,us.`U_id` usid,
+        us.`uname` usname,w.`details` wdetails
+         FROM warehouse w,users u,users us,province p,city c
+         WHERE w.`usre_id`=u.`U_id`
+          AND w.`user_id`=us.`U_id`
+          AND w.`province_id`=p.`id`
+          AND w.`city_id`=c.`id`
+          AND w.`id`=#{id}
+    </select>
+    <update id="updateWarehouse" parameterType="com.erp.pojo.Warehouse">
+        UPDATE warehouse w
+ SET w.`c_name`=#{sname},
+ w.`c_address`=#{saddress},
+ w.`province_id`=#{province_id},
+ w.`city_id`=#{city_id},
+ w.`usre_id`=#{usre_id},
+ w.`phone`=#{sphone},
+ w.`details`=#{sdetails},
+ w.`state`=#{state}
+ WHERE w.`id`=#{id}
+    </update>
+	<insert id="addWarehouse" parameterType="com.erp.pojo.Warehouse">
+        INSERT INTO warehouse
+ (`c_name`,`c_address`,`province_id`,`city_id`,`usre_id`,`phone`,`details`,`state`,`user_id`,`creation_time`)
+ VALUES
+ (#{sname},#{saddress},#{province_id},#{city_id},#{usre_id},#{sphone},#{sdetails},#{state},#{user_id},NOW())
+    </insert>
+    <resultMap id="findPerson" type="com.erp.pojo.users">
+        <result column="U_id" property="u_id"/>
+        <result column="uname" property="uname"/>
+        <result column="Dept_id" property="Dept_id"/>
+        <association property="dept" javaType="com.erp.pojo.dept">
+            <result column="Dept_id" property="Dept_id"/>
+            <result column="Dept_name" property="Dept_name"/>
+        </association>
+        <association property="job" javaType="com.erp.pojo.job">
+            <result column="Job_id" property="Job_id"/>
+            <result column="Job_name" property="Job_name"/>
+        </association>
+    </resultMap>
+    <select id="findPerson" resultMap="findPerson">
+        SELECT users.`U_id`,users.`uname`
+FROM dept,job,users
+WHERE users.`Dept_id`=dept.`Dept_id`
+AND users.`job_id`=job.`Job_id`
+AND dept.`Dept_name`='财务部'
+AND job.`Job_name`='经理'
+    </select>
+    <select id="findCname" resultType="com.erp.pojo.Warehouse">
+        SELECT * FROM warehouse WHERE c_name=#{c_name}
+    </select>
+    <resultMap id="showDeliveryViewMap" type="com.erp.pojo.Ck_warehouse">
+        <result column="indent" property="indent"></result>
+        <result column="c_date" property="c_date"></result>
+        <result column="state" property="state"></result>
+        <association property="order" javaType="com.erp.pojo.Order">
+           <result column="OrderId" property="orderId"></result>
+           <result column="OrderTime" property="orderTime"></result>
+           <result column="OrderMoney" property="orderMoney"></result>
+           <result column="status" property="status"></result>
+           <result column="opinion" property="opinion"></result>
+           <result column="checTime" property="checTime"></result>
+           <association property="custom" javaType="com.erp.pojo.Custom">
+               <id column="customId" property="customId" ></id>
+               <result column="Customname" property="customname"></result>
+               <result column="Telephone" property="telephone"></result>
+           </association>
+           <association property="users" javaType="com.erp.pojo.users">
+               <result column="c_uname" property="uname"></result>
+           </association>
+           <association property="s_users" javaType="com.erp.pojo.users">
+               <result column="s_uname" property="uname"></result>
+           </association>
+           <collection property="orderDetails" javaType="com.erp.pojo.OrderDetails">
+               <result column="purchase_num" property="purchase_num"></result>
+               <result column="prototal" property="prototal"></result>
+               <association property="product" javaType="com.erp.pojo.Product">
+                    <result column="Product_Model" property="name"></result>
+                    <result column="Product_Unit" property="unit"></result>
+                    <result column="Product_price" property="price"></result>
+                   <association property="productType" javaType="com.erp.pojo.ProductType">
+                       <result column="type_name" property="name"></result>
+                       <association property="brand" javaType="com.erp.pojo.Brand">
+                           <result column="brand_name" property="name"></result>
+                       </association>
+                   </association>
+                </association>
+           </collection>
+        </association>
+        <association property="warehouse" javaType="com.erp.pojo.Warehouse">
+            <id column="id" property="id"></id>
+            <result column="c_name" property="c_name"></result>
+        </association>
+        <association property="users" javaType="com.erp.pojo.users">
+           <result column="uname" property="uname"></result>
+        </association>
+    </resultMap>
+    <select id="showDeliveryView" resultMap="showDeliveryViewMap">
+        SELECT ck.indent,custom.Customname,custom.Customid,custom.Telephone,o.OrderTime,o.OrderMoney,
+        (SELECT users.uname FROM erp.order o,users WHERE o.operatorId=users.U_id AND o.OrderId=ck.indent) c_uname,
+        o.Status,o.OPINION,
+        (SELECT users.uname FROM erp.order o,users WHERE o.Checkid=users.U_id AND o.OrderId=ck.indent) s_uname,
+        o.Chectime,w.c_name,w.id,ck.c_date,users.uname,ck.state,brand.brand_name,type.type_name,
+        p.Product_Model,o1.purchase_num,p.Product_Unit,p.Product_price,o1.Prototal
+        FROM ck_warehouse ck ,warehouse w,erp.order o,custom,users,orderdetails o1,product p,TYPE,brand
+        WHERE ck.warehouse_id = w.id
+        AND ck.indent = o.OrderId
+        AND custom.CustomId = o.CustomId
+        AND users.U_id = ck.user_id
+        AND o1.Order_id = ck.indent
+        AND o1.Product_id = p.product_id
+        AND type.type_id = p.type_id
+        AND brand.brand_id=type.brand_id
+        AND ck.indent =#{ck_indent}
+    </select>
+    <select id="ckList" resultMap="showDeliveryViewMap">
+        SELECT ck.`indent`,o.`OrderMoney`,w.`c_name`,ck.`c_date`,u.`uname`,ck.`state`
+ FROM ck_warehouse ck,erp.order o,warehouse w,users u
+ WHERE ck.`indent` = o.`OrderId`
+  AND ck.`warehouse_id` = w.`id`
+   AND ck.`user_id` = u.`U_id`
+        <if test="c_name != ''">
+            AND w.`c_name` LIKE concat('%',#{c_name},'%')
+        </if>
+        <if test="indent != ''">
+            AND ck.`indent` LIKE concat('%',#{indent},'%')
+        </if>
+        <if test="state != '请选择'">
+            AND ck.`state` LIKE concat('%',#{state},'%')
+        </if>
+    </select>
+    <insert id="addDelivery" parameterType="com.erp.pojo.Ck_warehouse">
+        INSERT INTO ck_warehouse (indent,warehouse_id,c_date,user_id,state) VALUES (#{indent},#{id},NOW(),#{user_id},'1')
+    </insert>
+    <select id="findWarehouse" resultType="com.erp.pojo.Warehouse">
+        SELECT c_name,id FROM warehouse WHERE state='1'
+    </select>
+    <update id="updateDd_state" parameterType="com.erp.pojo.Order">
+        UPDATE erp.order SET dd_state = 0 WHERE orderId =#{indent}
+    </update>
+    <select id="findDdh" resultType="com.erp.pojo.Order">
+        SELECT OrderId FROM erp.`order` WHERE STATUS=2 AND Dd_state=1
+    </select>
+    <select id="state" resultType="java.lang.Integer">
+        SELECT state FROM ck_warehouse WHERE indent = #{indent}
+    </select>
+    <update id="cancelOrder">
+        UPDATE ck_warehouse SET
+         <if test="status==1">
+             state=5
+         </if>
+        <if test="status==3">
+            state=3
+        </if>
+         <if test="status==6">
+             state=4
+         </if>
+          WHERE indent=#{indent}
+    </update>
+    <select id="findIndentAndWarehouse_id" resultType="com.erp.pojo.Ck_warehouse">
+        SELECT indent,warehouse_id FROM ck_warehouse WHERE state=1
+    </select>
+    <select id="findIdAndNum" resultType="com.erp.pojo.OrderDetails">
+        SELECT product_id,purchase_num FROM orderdetails WHERE Order_id = #{indent}
+    </select>
+    
+    <select id="findProduct" resultType="com.erp.pojo.OrderDetails">
+        SELECT product_id,purchase_num
+        FROM orderdetails
+         WHERE Order_id = #{indent}
+    </select>
+    <update id="ship" >
+        UPDATE inventory
+        SET inventory.count=inventory.count-#{num}
+        WHERE inventory.`product_id`=#{productId}
+        AND inventory.warehouse_id =
+        (SELECT ck.warehouse_id
+        FROM ck_warehouse ck
+        WHERE ck.state=1
+        AND ck.`indent`=#{indent})
+
+    </update>
+    <update id="updateCkState">
+        UPDATE
+          ck_warehouse
+        SET
+          `state` =  2
+        WHERE `indent` =  #{indent}
+    </update>
+    <select id="isNumTrue" resultType="com.erp.pojo.Inventory">
+        SELECT * FROM inventory
+        WHERE inventory.`count`>= #{num}
+        AND inventory.warehouse_id=
+        (SELECT ck.warehouse_id
+        FROM ck_warehouse ck
+        WHERE ck.state=1
+        AND ck.`indent`=#{indent})
+        AND inventory.`product_id`=#{productId}
+    </select>
+
+    <update id="scancelShopping" >
+        UPDATE inventory
+        SET inventory.count=inventory.count+#{num}
+        WHERE inventory.`product_id`=#{productId}
+        AND inventory.warehouse_id =
+        (SELECT ck.warehouse_id
+        FROM ck_warehouse ck
+        WHERE ck.state=4
+        AND ck.`indent`=#{indent})
+
+    </update>
+    <update id="changesStatusWarehouse">
+        UPDATE warehouse SET state = #{state}
+        WHERE id = #{id}
+    </update>
+    <update id="updateCKState">
+        UPDATE CK_warehouse SET state = 5
+        WHERE Indent = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.ProductDao">
+    <resultMap id="sePro" type="com.erp.pojo.Product">
+        <id column="product_id" property="id"></id>
+        <result column="product_model" property="name"></result>
+    </resultMap>
+    <select id="tidFindAll" resultMap="sePro">
+       SELECT product_id,product_model FROM product WHERE type_id=#{tid}
+            <if test="status==1">
+                and product_status=1
+            </if>
+    </select>
+    <sql id="selectProduct">
+        SELECT p.product_id,b.brand_name,t.type_name,p.product_model,p.product_unit,p.product_status,p.creat_time,u.uname,b.brand_id,p.product_price,f.firm_name FROM
+        product p
+        JOIN TYPE t ON t.type_id=p.type_id
+        JOIN brand b ON t.brand_id=b.brand_id
+        JOIN users u ON p.creat_id=u.U_id
+        JOIN c_firm f ON f.firm_id=p.firm_id
+    </sql>
+    <select id="findAllInfo" resultMap="seAllPro">
+        <include refid="selectProduct"></include>
+        <where>
+            <if test="bid!=null">
+                b.brand_id=#{bid}
+            </if>
+            <if test="tid!=null ">
+                and p.type_id=#{tid}
+            </if>
+            <if test="status!=null ">
+                and p.product_status=#{status}
+            </if>
+            <if test="pname!='null' and pname!='' and pname!=null ">
+                and p.product_model LIKE concat('%',#{pname},'%')
+            </if>
+        </where>
+    </select>
+    <resultMap id="seAllPro" type="com.erp.pojo.Product">
+        <id column="product_id" property="id"></id>
+        <result column="product_model" property="name"></result>
+        <result column="product_unit" property="unit"></result>
+        <result column="product_status" property="status"></result>
+        <result column="creat_time" property="creatTime"></result>
+        <result column="product_price" property="price"></result>
+        <association property="user" javaType="com.erp.pojo.users">
+            <result column="uname" property="uname"></result>
+        </association>
+        <association property="productType" javaType="com.erp.pojo.ProductType">
+            <result column="type_name" property="name"></result>
+            <association property="brand" javaType="com.erp.pojo.Brand">
+                <result column="brand_name" property="name"></result>
+                <result column="brand_id" property="id"></result>
+            </association>
+        </association>
+        <association property="cfirm" javaType="com.erp.pojo.Cfirm">
+            <result column="firm_name" property="firm_name"></result>
+        </association>
+    </resultMap>
+    <select id="getProduct" resultMap="seAllPro">
+        <include refid="selectProduct"/>
+        where  p.product_id=#{pid}
+    </select>
+    <update id="updateProduct">
+        UPDATE product p SET p.product_model=#{pname},p.type_id=#{tid},product_price=#{price},p.product_unit=#{unit},p.firm_id=#{fid},p.product_status=#{status} WHERE p.product_id=#{pid}
+    </update>
+    <insert id="insertProduct">
+        INSERT INTO product VALUES(NULL,#{pname},#{tid},#{price},#{unit},#{fid},#{uid},NOW(),#{status})
+    </insert>
+    <update id="updateStatus">
+        UPDATE product SET product_status=#{status} WHERE product_id=#{pid}
+    </update>
+    <select id="queryParentStatus" resultMap="typeId">
+        SELECT t.type_id FROM product p JOIN TYPE t ON p.type_id=t.type_id WHERE t.type_ststus=1 AND p.product_id=#{pid}
+    </select>
+    <resultMap id="typeId" type="com.erp.pojo.ProductType">
+        <id column="type_id" property="id"></id>
+    </resultMap>
+    <select id="queryProductName" resultMap="sePro">
+        SELECT * FROM product WHERE product_model=#{pname};
+    </select>
+</mapper>

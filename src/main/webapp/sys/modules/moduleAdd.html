@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>模块管理</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="../../laydate/laydate.js"></script>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li><a href="../users/userList.html">系统管理</a></li>
+    <li><a href="moduleList.html">模块管理</a></li>
+    <li><a href="#">添加</a></li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>模块信息</span></div>
+  <ul class="forminfo">
+    <li>
+      <label>模块名称</label>
+      <input name="" type="text" class="dfinput" id="module_rname"/>
+      <i>必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>父模块</label>
+      <select name="" class="dfselect" id="Fmodule">
+
+      </select>
+    </li>
+    <li>
+      <label>URL</label>
+      <input name="" type="text" class="dfinput" id="url"/>
+      <i>必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>&nbsp;</label>
+      <input name="" type="button" class="btn" id="save" value="确认保存"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input name="" type="button" class="btn" value="返回"  onclick="window.history.go(-1);"/>
+    </li>
+  </ul>
+</div>
+<script type="text/javascript">
+$(function () {
+  showFather();
+
+  $("#save").click(function () {
+    addModule();
+  });
+})
+  function showFather() {
+      $.ajax({
+        url:"showFatherModule",
+        type:"get",
+        dataType:"json",
+        success:function (d) {
+            var op=" <option value='0'>请选择父模块</option>";
+            $.each(d,function (index,item) {
+              op+=" <option value='"+item.module_id+"'>"+item.module_rname+"</option>";
+            });
+            $("#Fmodule").append(op);
+        }
+      })
+  }
+
+  function addModule() {
+    var module_rname=$("#module_rname").val();
+    var p_id=$("#Fmodule").val();
+    var url=$("#url").val();
+
+    $.ajax({
+      url:"addModule",
+      type:"get",
+      data:{"module_rname":module_rname,"p_id":p_id,"url":url},
+      dataType: "json",
+      success:function (d) {
+          if(d!=0){
+            alert("添加成功");
+          }
+          else{
+            alert("添加是吧");
+          }
+      }
+    });
+
+  }
+
+</script>
+</body>
+</html>

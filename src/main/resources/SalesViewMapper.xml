@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StatisDao">
+    <resultMap id="SalesViewMap" type="com.erp.pojo.Order">
+        <id column="orderid" property="orderId"></id>
+        <result column="OrderTime" property="orderTime"></result>
+        <result column="num" property="num"></result>
+        <result column="orderMoney" property="orderMoney"></result>
+        <association property="custom" javaType="com.erp.pojo.Custom">
+            <id column="custom_id" property="customId"></id>
+            <result column="customname" property="customname"></result>
+            <result column="address" property="address"></result>
+        </association>
+        <association property="users" javaType="com.erp.pojo.users">
+            <id column="u_id" property="u_id"></id>
+            <result column="uname" property="uname"></result>
+        </association>
+    </resultMap>
+    <select id="findSalesView" resultMap="SalesViewMap">
+        SELECT erp.order.*,users.*,custom.Customname ,custom.CustomId custom_id,custom.Address,
+        (SELECT SUM(purchase_num) FROM orderdetails WHERE order.OrderId=orderdetails.Order_id) num FROM erp.order,custom,users
+        WHERE order.CustomId=custom.CustomId
+        AND order.operatorId = users.U_id
+        AND order.Status=2
+        AND custom.Customname=#{uname}
+    </select>
+
+</mapper>

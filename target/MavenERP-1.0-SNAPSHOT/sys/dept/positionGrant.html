@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head lang="en">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="../../css/style.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+    <style type="text/css">
+
+        #treeMenu ul{
+            margin-left: 50px;
+        }
+
+        #treeMenu a{
+            font-size: 14px;
+        }
+
+        .hidden{
+            display: none;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function(){
+            // $("#treeMenu").children("li").children(":checkbox").click(function(){
+            //     var flag = $(this).attr("checked");
+            //     $(this).siblings("ul").show();
+            //     $(this).siblings("ul").children("li").children(":checkbox").attr("checked", flag);
+            // }).siblings("a").click(function(){
+            //     $(this).siblings("ul").toggle();
+            // });
+
+
+
+            $(".forminfo").delegate("#btn","click",function () {
+                var flag = $(this).attr("checked");
+                     $(this).siblings("ul").show();
+                     $(this).siblings("ul").children("li").children(":checkbox").attr("checked", flag);
+            })
+
+        });
+    </script>
+</head>
+<body>
+    <div class="place"> <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="../users/userList.html">系统管理</a></li>
+            <li><a href="positionList.html">职位管理</a></li>
+            <li><a href="#">赋权</a></li>
+        </ul>
+    </div>
+    <div class="formbody">
+        <div class="formtitle"><span>职位赋权</span></div>
+        <ul id="treeMenu" class="forminfo" id="modulelist">
+
+        </ul>
+        <input name="" type="button" class="btn" id="sure" value="确认赋权"/>
+        <input name="" type="button" class="btn" value="返回" onclick="window.history.go(-1);"/>
+    </div>
+<script type="text/javascript">
+    $(function () {
+        var dept_name=getParams("dept_name");
+        var job_id=getParams("job_id");
+        $.ajax({
+            url:"changeJobShow",
+            type:"get",
+            dataType:"json",
+            success:function (d) {
+                var li="";
+                $.each(d,function (index,item) {
+                        li+="<li  class='hidden' id='"+item.module.module_id+"'>";
+                    li+="<input type='checkbox'  />";
+                    li+="   <a href='javascript:void(0);'   id='btn'>"+item.module.module_rname+"</a>";
+                    li+=" <ul class='hidden'>";
+                    $.each(item.module.setmodel,function (i,mo) {
+                        li+="    <li>";
+                        li+="<input type='checkbox'  name='per_id' id='"+mo.module_rname+"' value='"+mo.module_id+"'/>";
+                        li+="<a href='../modules/moduleView.html'>"+mo.module_rname+"</a>";
+                        li+="</li>";
+                    });
+                    li+="</ul>";
+                    li+="  </li>";
+                });
+                $(".forminfo").append(li);
+                if(dept_name=="市场部"){
+                     $("#8").attr("class","null");
+                }
+               else if(dept_name=="财务部"){
+                    $("#13").attr("class","null");
+                    $("#26").attr("class","null");
+                }
+                else if(dept_name=="采购部"){
+                    $("#19").attr("class","null");
+                }
+                else if(dept_name=="行政部"){
+                    $("#1").attr("class","null");
+                }
+                else {
+                    $(".forminfo li").attr("class","null");
+                }
+                $.ajax({
+                    url:"findpersion",
+                    type:"get",
+                    data:{"job_id":job_id},
+                    dataType:"json",
+                    success:function (d) {
+                        $.each(d.setmodule,function (index,item) {
+                            $("#"+item.module_rname).attr("checked","checked");
+                        });
+                    }
+                });
+            }
+
+        });
+
+
+
+
+
+        var arr=[];
+        $("#sure").click(function () {
+
+           var id_nums= $('input:checkbox:checked').each(function () {
+               var job={"job_id":job_id,"p_id":  $(this).val()};
+             arr.push(job);
+            });
+            $.ajax({
+                url:"addPer",
+                type:"post",
+                contentType:"application/json",
+                data:JSON.stringify(arr),
+               // traditional:true,
+                dataType: "json",
+                success:function (d) {
+                        if(d!=0){
+                            alert("赋权成功");
+                        }
+                        else{
+                            alert("赋权失败");
+                        }
+                }
+            });
+
+    })
+
+
+
+
+
+
+    })
+
+    function getParams(key) {
+        var keyList = [];
+        var valueList = [];
+        var hrefStr = decodeURIComponent(window.location.href);
+        var strArray = hrefStr.split("?");
+        var paramStr = strArray[1];
+        if((paramStr != null) && (paramStr != null)) {
+            var paramArray = paramStr.split("&");
+            for(var i = 0; i <
+            paramArray.length; i++) {
+                var param = paramArray[i];
+                valueList.push(param.substr(param.indexOf("=") + 1));
+                keyList.push(param.substr(0, param.indexOf("=")));
+            }
+            for(var j = 0; j < keyList.length; j++) {
+                if(key == keyList[j]) {
+                    return valueList[j];
+                }
+            }
+        }
+    }
+
+
+</script>
+</body>
+</html>

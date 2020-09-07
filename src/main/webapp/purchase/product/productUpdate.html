@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li>采购管理</li>
+    <li>商品管理</li>
+    <li>修改</li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>商品信息</span></div>
+  <ul class="forminfo">
+    <li id="brandOne">
+      <label>品牌名称</label>
+      <select class="dfselect" >
+      	  <option>请选择</option>
+          <option selected="selected">联想</option>
+          <option>海尔</option>
+        </select>
+      <i>必选</i>
+    </li>
+    <li>
+      <label>商品类型</label>
+      <select class="dfselect">
+      	  <option>请选择</option>
+          <option selected="selected">笔记本</option>
+          <option>电视机</option>
+        </select>
+      <i>必选</i>
+    </li>
+    <li>
+      <label>供货厂商</label>
+      <select class="dfselect" id="firm">
+        <option value="">请选择</option>
+      </select>
+      <i>必选</i>
+    </li>
+    <li>
+      <label>商品型号</label>
+      <input name="" type="text" id="pname" value="" class="dfinput" />
+      <i id="pnameTips">必填，不能超过50个字符</i>
+    </li>
+    <li>
+      <label>单价</label>
+      <input name="" type="text" id="price" value="" class="dfinput" />
+      <i>必填</i>
+    </li>
+    <li>
+      <label>单位</label>
+      <input name="" type="text" id="unit" value="" class="dfinput" />
+      <i>必填，不能超过10个字符</i>
+    </li>
+    <li>
+      <label>状态</label>
+      <select class="dfselect" id="proStatus">
+          <option value="1">可用</option>
+          <option value="0">不可用</option>
+        </select>
+      <i>必选</i>
+    </li>
+    <li>
+      <label>创建人</label>
+      <input name="" type="text" value="马云" id="uname" readonly="readonly" class="roinput" />
+      <i>不能编辑</i>
+    </li>
+    <li>
+      <label>创建时间</label>
+      <input name="" type="text" value="2017-11-18 15:36:10" id="createTime" readonly="readonly" class="roinput" />
+      <i>不能编辑</i>
+    </li>
+    <li>
+      <label>&nbsp;</label>
+      <input name="" type="button" class="btn" id="updateProduct" value="确定"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input name="" type="button" class="btn" value="返回" onclick="window.location.href='productList.html'"/>
+    </li>
+  </ul>
+</div>
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script>
+  var initialPname;
+  $("#pname").change(function () {
+    var pname=$("#pname").val();
+    $.ajax({
+      type:"get",
+      url:"../../product/queryProductName",
+      data:{"pname":pname},
+      dataType:"json",
+      success:function(d){
+        pnameTips=d;
+        if(d&&initialPname!=pname){
+          $("#pnameTips").html("商品名不可用,重名！！！")
+        }else{
+          $("#pnameTips").html("商品名可用")
+        }
+        $("#pnameTips").css("color","red");
+      }
+    });
+  })
+  var pid=getParam("pid")
+  var productType;
+  $.ajax({
+    type:"get",
+    url:"../../product/getProduct",
+    data:{"pid":pid},
+    dataType:"json",
+    success:function(pro){
+      var brandHmtl=""
+      $.ajax({
+        type:"get",
+        url:"../../Brand/seBrandAllInfo",
+        dataType:"json",
+        data:{"status":"1"},
+        async:false,
+        success:function(d){
+          brandHmtl+="<label>品牌名称</label><select class=\"dfselect\" onchange='seType()' id='bid'>";
+          brandHmtl+="<option value=''>请选择</option>"
+          $.each(d,function (index,brand) {
+            if(pro.productType.brand.id==brand.id){
+              brandHmtl+="<option value='"+brand.id+"' selected>"+brand.name+"</option>";
+
+            }else{
+              brandHmtl+="<option value='"+brand.id+"'>"+brand.name+"</option>";
+            }
+          })
+          brandHmtl+="</select>";
+          $("#brandOne").html(brandHmtl)
+          seType();
+        }
+      })
+      var statusHtml=""
+      if(pro.status==1){
+        statusHtml="<option value='1' selected='selected'>可用</option><option value='0' >不可用</option>"
+      }else{
+        statusHtml="<option value='1'>可用</option><option value='0' selected='selected'>不可用</option>";
+      }
+      //获取供应商级联列表
+      $.ajax({
+        type:"get",
+        url:"../../firm/cascadeQueries",
+        dataType:"json",
+        success:function(fList){
+          var cfimList=""
+          $.each(fList,function (index,firm) {
+            if(firm.firm_name==pro.cfirm.firm_name){
+              cfimList+="<option value='"+firm.firm_id+"' selected>"+firm.firm_name+"</option>";
+            }else{
+              cfimList+="<option value='"+firm.firm_id+"'>"+firm.firm_name+"</option>";
+            }
+          })
+          $("#firm").html(cfimList);
+        }
+      })
+      $("#proStatus").html(statusHtml)
+      initialPname=pro.name;
+      $("#pname").val(pro.name);
+      $("#unit").val(pro.unit);
+      $("#uname").val(pro.user.uname);
+      $("#createTime").val(pro.creatTime);
+      $("#price").val(pro.price);
+      productType=pro.productType.name;
+    }
+  })
+  //查询品牌下的类型
+  function seType() {
+    var mythis=$("#bid");
+    var bid=mythis.val();
+    if(bid==""){
+      mythis.parent().next().html("<label>商品类型</label><select class=\"dfselect\" onchange=\"seProduct(this)\" id='tid'><option value=''>请选择</option></select>")
+    }
+    $.ajax({
+      type:"get",
+      url:"../../productType/bidFindAll",
+      data:{"status":"0","bid":bid},
+      dataType:"json",
+      success:function(d){
+        var html="<label>商品类型</label><select class=\"dfselect\" id='tid'><option value=''>请选择</option>"
+        $.each(d,function(index,type) {
+          if(type.name==productType){
+            html+="<option value='"+type.id+"' selected>"+type.name+"</option>";
+            productType=null;
+          }else{
+            html+="<option value='"+type.id+"'>"+type.name+"</option>";
+          }
+
+        })
+        html+="</select>";
+        mythis.parent().next().html(html)
+      }
+    })
+  }
+  //提交修改
+  $("#updateProduct").click(function() {
+    var tid=$("#tid").val();
+    var fid=$("#firm").val();
+    var pname=$("#pname").val();
+    var price=$("#price").val();
+    var unit=$("#unit").val();
+    var proStatus=$("#proStatus").val();
+    if(tid==""||tid==null||tid==undefined){
+      alert("请选择类型");
+      return;
+    }
+    if(fid==""||fid==null||fid==undefined){
+      alert("请选择厂商");
+      return;
+    }
+    if(pname==""||pname==null||pname==undefined){
+      alert("请填写商品型号");
+      return;
+    }
+    if(price==""||price==null||price==undefined){
+      alert("请填写商品金额");
+      return;
+    }
+    if(unit==""||unit==null||unit==undefined){
+      alert("请填写单位");
+      return;
+    }
+    if(proStatus==""||proStatus==null||proStatus==undefined){
+      alert("请选择状态");
+      return;
+    }
+    $.ajax({
+      type:"get",
+      url:"../../product/updateProduct",
+      data:{"pid":pid,"tid":tid,"pname":pname,"fid":fid,"price":price,"unit":unit,"status":proStatus},
+      dataType:"json",
+      success:function(d){
+        if(d>=1){
+          window.location.href='productList.html'
+        }else {
+          alert("修改失败")
+        }
+      }
+    })
+  })
+  function getParam(paramName) {
+    paramValue = "", isFound = !1;
+    if (this.location.search.indexOf("?") == 0 && this.location.search.indexOf("=") > 1) {
+      arrSource = unescape(this.location.search).substring(1,
+              this.location.search.length).split("&"), i = 0;
+      while (i < arrSource.length && !isFound) arrSource[i].indexOf("=") > 0 &&
+      arrSource[i].split("=")[0].toLowerCase() == paramName.toLowerCase() && (paramValue = arrSource[i].split("=")[1], isFound = !0), i++
+    }
+    return paramValue == "" && (paramValue = null), paramValue
+  }
+</script>
+</body>
+</html>

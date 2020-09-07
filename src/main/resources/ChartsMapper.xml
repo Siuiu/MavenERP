@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StatisDao">
+    <resultMap id="getDate" type="com.erp.pojo.TotalData">
+        <result column="orderNum" property="orderNum"></result>
+        <result column="purchaseNum" property="purchaseNum"></result>
+        <result column="ckNum" property="ckNum"></result>
+        <result column="rkNum" property="rkNum"></result>
+    </resultMap>
+    <select id="findData" resultMap="getDate">
+        SELECT COUNT(*) orderNum,
+        (SELECT COUNT(*) FROM c_purchase c_p WHERE c_p.Check_Status='审核通过') purchaseNum,
+        (SELECT COUNT(*) FROM ck_warehouse ck WHERE ck.state=3) ckNum,
+        (SELECT COUNT(*) FROM rk_warehouse rk WHERE rk.state = 2) rkNum
+        FROM erp.order
+        WHERE erp.order.Status=2
+    </select>
+    <resultMap id="findDataMap" type="com.erp.pojo.TotalData">
+        <result column="money" property="money"></result>
+        <result column="address" property="address"></result>
+        <result column="name" property="name"></result>
+        <result column="id" property="id"></result>
+    </resultMap>
+    <select id="findOrderData" resultMap="findDataMap">
+        SELECT erp.order.OrderMoney money ,erp.order.orderid id,custom.Address,custom.Customname NAME
+        FROM erp.order,custom
+        WHERE erp.order.status = 2
+        AND custom.CustomId=erp.order.CustomId
+        ORDER BY erp.order.OrderTime DESC LIMIT 5
+
+    </select>
+
+    <select id="findPurchaseData" resultMap="findDataMap">
+        SELECT c_p.total_Money money ,c_p.purchase_id id,c_f.firm_name NAME,
+        CONCAT(p1.p_name,city.c_name) address
+        FROM c_purchase c_p ,details d,product p,c_firm c_f,province p1,city
+        WHERE d.purchase_id = c_p.purchase_id
+        AND d.product_id=p.product_id
+        AND  p.firm_id=c_f.firm_id
+        AND city.id = c_f.firm_city
+        AND p1.id = city.p_id
+        AND c_p.check_status='审核通过'
+        GROUP BY c_p.purchase_id
+        ORDER BY c_p.purchase_time DESC LIMIT 5
+    </select>
+
+    <select id="findCKData" resultMap="findDataMap">
+        SELECT erp.order.OrderMoney money,erp.order.OrderId id,w.c_name NAME,w.c_address address
+        FROM erp.order,ck_warehouse ck,warehouse w
+        WHERE ck.indent = erp.order.OrderId
+        AND w.id = ck.warehouse_id
+        AND erp.order.Status=2
+        AND ck.state=3
+        ORDER BY ck.c_date DESC LIMIT 5
+    </select>
+    <select id="findRkData" resultMap="findDataMap">
+        SELECT c_p.total_Money money,c_p.purchase_id id,w.c_name NAME,w.c_address address
+        FROM c_purchase c_p,rk_warehouse rk,warehouse w
+        WHERE rk.rk_indent = c_p.purchase_id
+        AND rk.warehouse_id =w.id
+        AND c_p.check_status='审核通过'
+        AND rk.state=2
+        ORDER BY c_p.purchase_time DESC LIMIT 5
+    </select>
+</mapper>

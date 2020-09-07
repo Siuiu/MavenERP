@@ -1,0 +1,266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>职位管理</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/pagination.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+  <script type="text/javascript" src="../../js/jquery.pagination.js"></script>
+<script type="text/javascript">
+function tipOpen(content) {
+	$(".tipright p").text(content);
+	$("#tip").fadeIn(200);
+}
+function tipClose() {
+	$("#tip").fadeOut(200);
+}
+</script>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li><a href="../users/userList.html">系统管理</a></li>
+    <li><a href="#">职位管理</a></li>
+  </ul>
+</div>
+<div class="rightinfo">
+  <form action="" method="post">
+    <ul class="tools">
+      <li> <label>职位名称:</label>
+        <input type="text" id="job_name"/>
+      </li>
+      <li> <label>所属部门：</label>
+        <select name="" id="dept">
+
+        </select>
+      </li>
+      <li class="subBut" id="search"><img src="../../images/t06.png" />查询</li>
+      <li class="subBut" id="add" onclick="window.location.href='positionAdd.html'"><img src="../../images/t01.png" />添加</li>
+    </ul>
+    <table class="tablelist">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>职位</th>
+          <th>所属部门</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="joblist">
+
+
+
+      </tbody>
+    </table>
+  </form>
+  <div class="m-style"></div>
+  <!-- 提示框 -->
+  <div id="tip" class="tip">
+    <div class="tiptop"><span>提示信息</span><a onclick="tipClose()"></a></div>
+    <div class="tipinfo"> <span><img src="../../images/ticon.png" /></span>
+      <div class="tipright">
+        <p></p>
+        <cite>如果是请点击确定按钮 ，否则请点取消。</cite> </div>
+    </div>
+    <div class="tipbtn">
+      <input name="" type="button"  class="sure" value="确定" />
+      &nbsp;
+      <input name="" type="button"  class="cancel" value="取消" onclick="tipClose()" />
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+	$('.tablelist tbody tr:odd').addClass('odd');
+
+	$(function () {
+      $.ajax({
+        url:"findwho",
+        type:"get",
+        dataType:"json",
+        success:function (d) {
+          joblist(d.job_id);
+        }
+      });
+      showdept();
+
+
+      $("#search").click(function () {
+        joblist();
+      });
+
+      $("#joblist").delegate("#res","click",function () {
+        var id=$(this).attr("name");
+        $(".sure").attr("id","sureR");
+        $("#sureR").attr("name",id);
+
+        tipOpen("是否确认恢复职位id为"+id+"此条信息？");
+      });
+
+      $("#joblist").delegate("#remove","click",function () {
+        var id=$(this).attr("name");
+        $(".sure").attr("id","removeR");
+        $("#removeR").attr("name",id);
+
+        tipOpen("是否确认注销职位id为"+id+"此条信息？");
+      });
+
+      $("#tip").delegate("#removeR","click",function () {
+        var  job_id=$("#removeR").attr("name");
+        $.ajax({
+          url:"removeJob",
+          type:"get",
+          data:{"job_id":job_id},
+          dataType: "json",
+          success:function (d) {
+            if(d!=0){
+              $("#tip").fadeOut(200);
+              window.location.reload();
+            }
+            else{
+              alert("注销失败");
+            }
+          }
+        });
+      })
+
+
+      $("#tip").delegate("#sureR","click",function () {
+        var  job_id=$("#sureR").attr("name");
+        $.ajax({
+          url:"sureJob",
+          type:"get",
+          data:{"job_id":job_id},
+          dataType: "json",
+          success:function (d) {
+            if(d!=0){
+              $("#tip").fadeOut(200);
+              window.location.reload();
+            }
+            else{
+              alert("恢复失败");
+            }
+          }
+        });
+      });
+
+    });
+
+
+    function  showdept() {
+      $.ajax({
+        url: "deptlist",
+        type: "get",
+        dataType: "json",
+        success:function (d) {
+          var p="  <option value=''>请选择部门</option>";
+          $.each(d,function (index,dept) {
+            p+=" <option value='"+dept.dept_id+"'>"+dept.dept_name+"</option>";
+          })
+          $("#dept").append(p);
+        }
+      })
+    }
+
+    function joblist(id) {
+    var job_name=$("#job_name").val();
+    var dept_id=$("#dept").val();
+        $.ajax({
+          url:"joblist",
+          get:"get",
+          data:{"job_name":job_name,"dept_id":dept_id,"pageIndex":1},
+          dataType:"json",
+          success:function (d) {
+                var tr="";
+                $("#joblist tr").remove();
+                $.each(d.list,function (index,item) {
+                    tr+="<tr>";
+                    tr+=" <td>"+(index+1)+"</td>";
+                    tr+=" <td>"+item.job_name+"</td>";
+                    tr+=" <td>"+item.dept.dept_name+"</td>";
+                    tr+=" <td>"+item.job_state+"</td>";
+                    tr+="  <td>";
+                    if(id=="21"){
+                      $("#add").remove();
+                    }
+                    else{
+                      if(item.job_state=="正常"){
+                        tr+=" <a href='positionUpdate.html?job_id="+item.job_id+"' class='tablelink'>修改</a>";
+                        tr+=" <a href='positionGrant.html?dept_name="+item.dept.dept_name+"&job_id="+item.job_id+"'   class='tablelink'>赋权</a>";
+                        tr+="  <a href='javascript:void(0)' class='tablelink' id='remove' name='"+item.job_id+"' >注销</a>";
+                      }
+                      else{
+                        tr+="  <a href='javascript:void(0)' class='tablelink' id='res' name='"+item.job_id+"' >恢复</a>";
+                      }
+                    }
+
+                    tr+=" </td>";
+                    tr+="   </tr>";
+
+                });
+                $("#joblist").append(tr);
+            $('.m-style').pagination({
+              totalData: d.rowCount,
+              showData: d.pageSize,
+              mode: 'fixed',
+              coping: true,
+              homePage: '首页',
+              endPage: '末页',
+              prevContent: '上页',
+              nextContent: '下页',
+              callback: function (api) {
+                //当前的页码
+                getjoblist(api.getCurrent(),id);
+
+              }
+            })
+          }
+        });
+    }
+
+  function getjoblist(pageIndex,id) {
+    var job_name=$("#job_name").val();
+    var dept_id=$("#dept").val();
+    $.ajax({
+      url:"joblist",
+      get:"get",
+      data:{"job_name":job_name,"dept_id":dept_id,"pageIndex":pageIndex},
+      dataType:"json",
+      success:function (d) {
+        var tr="";
+        $("#joblist tr").remove();
+        $.each(d.list,function (index,item) {
+          tr+="<tr>";
+          tr+=" <td>"+(index+1)+"</td>";
+          tr+=" <td>"+item.job_name+"</td>";
+          tr+=" <td>"+item.dept.dept_name+"</td>";
+          tr+=" <td>"+item.job_state+"</td>";
+          tr+="  <td>";
+          if(id=="21"){
+            $("#add").remove();
+          }
+          else{
+            if(item.job_state=="正常"){
+              tr+=" <a href='positionUpdate.html?job_id="+item.job_id+"' class='tablelink'>修改</a>";
+              tr+=" <a href='positionGrant.html?dept_name="+item.dept.dept_name+"&job_id="+item.job_id+"'   class='tablelink'>赋权</a>";
+              tr+="  <a href='javascript:void(0)' class='tablelink' id='remove' name='"+item.job_id+"' >注销</a>";
+            }
+            else{
+              tr+="  <a href='javascript:void(0)' class='tablelink' id='res' name='"+item.job_id+"' >恢复</a>";
+            }
+          }
+          tr+=" </td>";
+          tr+="   </tr>";
+
+        });
+        $("#joblist").append(tr);
+
+      }
+    });
+  }
+
+</script>
+</body>
+</html>

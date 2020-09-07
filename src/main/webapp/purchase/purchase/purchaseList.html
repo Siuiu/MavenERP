@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>客户管理</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<link type="text/css" rel="stylesheet" href="../../css/pagination.css" />
+<script type="text/javascript" src="../../js/jquery.js"></script>
+<script type="text/javascript">
+
+
+</script>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li>采购管理</li>
+    <li>采购单管理</li>
+    <li>基本内容</li>
+  </ul>
+</div>
+<div class="rightinfo">
+    <ul class="tools">
+      <li> 采购单编号:
+        <input type="text" name="pid"/>
+      </li>
+      <li>
+          采购时间:
+        <input type="date" name="startTime"/>-<input type="date" name="endTime"/>
+      </li>
+      <li> 金额:
+        <input type="text" class="stinput" name="minPrice" />-<input type="text" class="stinput" name="maxPrice"/>
+      </li>
+      <li> 审核状态：
+        <select name="status">
+          <option value="">请选择</option>
+          <option value="未审核">未审核</option>
+          <option value="审核中">审核中</option>
+          <option value="审核通过">审核通过</option>
+          <option value="审核未通过">审核未通过</option>
+        </select>
+      </li>
+      <li class="subBut" onclick="sePur()"><img src="../../images/t06.png" />查询</li>
+      <li class="subBut" id="add" onclick="window.location.href='purchaseAdd.html'"><img src="../../images/t01.png" />添加</li>
+    </ul>
+    <table class="tablelist">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>采购单编号</th>
+          <th>采购时间</th>
+          <th>金额</th>
+          <th>操作人</th>
+          <th>审核状态</th>
+          <th>审核人</th>
+          <th>审核时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="purchaseList">
+        <!--<tr>
+          <td>1</td>
+          <td>CG201701270001</td>
+          <td>2017-01-25 15:05:05</td>
+          <td>￥9,876,582</td>
+          <td>关羽</td>
+          <td>未审核</td>
+          <td></td>
+          <td></td>
+          <td>
+            <a href="purchaseUpdate.html" class="tablelink">修改</a>
+            <a href="javascript:void(0);" class="tablelink" onclick="deltipOpen()">删除</a>
+            <a href="javascript:void(0);" class="tablelink" onclick="examinetipOpen()">提交审核</a>
+            </td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>CG201701270002</td>
+          <td>2017-01-25 15:05:05</td>
+          <td>￥9,876,582</td>
+          <td>关羽</td>
+          <td>审核中</td>
+          <td></td>
+          <td></td>
+          <td>
+          	<a href="purchaseView.html" class="tablelink">查看详情</a>
+          </td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>CG201701270003</td>
+          <td>2017-01-25 15:05:05</td>
+          <td>￥9,876,582</td>
+          <td>关羽</td>
+          <td>审核通过</td>
+          <td>曹操</td>
+          <td>2017-01-30 12:05:05</td>
+          <td>
+          	<a href="purchaseView.html" class="tablelink">查看详情</a>
+            <a href="../../storage/stock/stockView.html" class="tablelink">入库详情</a>
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>CG201701270004</td>
+          <td>2017-01-25 15:05:05</td>
+          <td>￥9,876,582</td>
+          <td>关羽</td>
+          <td>审核不通过</td>
+          <td>曹操</td>
+          <td>2017-01-30 12:05:05</td>
+          <td>
+            <a href="purchaseUpdate.html" class="tablelink">修改</a>
+            <a href="javascript:void(0);" class="tablelink" onclick="examinetipOpen()">提交审核</a>
+          </td>
+        </tr>-->
+      </tbody>
+    </table>
+    <div class="pagin">
+      <div class="message">共<i class="blue" id="pageCount">1245</i>条记录，当前显示第&nbsp;<i class="blue" id="pageIndex">0&nbsp;</i>页</div>
+      <div class="m-style"></div>
+    </div>
+
+
+  <!-- 删除提示框 -->
+  <div id="deltip" class="tip">
+    <div class="tiptop"><span>提示信息</span><a onclick="deltipClose()"></a></div>
+    <div class="tipinfo"> <span><img src="../../images/ticon.png" /></span>
+      <div class="tipright">
+        <p>是否确认删除此条信息？</p>
+        <cite>如果是请点击确定按钮 ，否则请点取消。</cite> </div>
+    </div>
+    <div class="tipbtn">
+      <input name="" type="button"  class="sure" value="确定" onclick="deletePurchase()" />
+      &nbsp;
+      <input name="" type="button"  class="cancel" value="取消" onclick="deltipClose()" />
+    </div>
+  </div>
+  
+  <!-- 审批提示框 -->
+  <div id="examinetip" class="tip">
+    <div class="tiptop">
+    	<span>提示信息</span><a onclick="examinetipclose()"></a>
+    </div>
+    <div class="tipinfo1"> 
+    	
+        部门：
+            <select class="dfselect">
+                <option>采购部</option>
+            </select>
+			<p/>
+            职位：
+            <select class="dfselect">
+                <option>部门经理</option>
+            </select>
+   			<p/>
+            职位：
+            <select class="dfselect" id="reviewer">
+
+            </select>
+			<p/>
+    </div>
+    <div class="tipbtn">
+      <input name="" type="button"  class="sure" value="确定" onclick="checkOK()" />
+      <input name="" type="button"  class="cancel" value="取消" onclick="examinetipclose()" />
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script src="../../js/jquery.pagination.js"></script>
+<script type="text/javascript">
+	$('.tablelist tbody tr:odd').addClass('odd');
+    function deltipClose() {
+        $("#deltip").fadeOut(200);
+    }
+    var checkPid;
+    function examinetipOpen(op) {
+        $("#examinetip").fadeIn(200);
+        checkPid=$(op).attr("pid");
+    }
+    function examinetipclose() {
+        $("#examinetip").fadeOut(200);
+    }
+    var uname;
+    $.ajax({
+        type:"get",
+        url:"../../purchase/getUser",
+        dataType:"json",
+        async:false,
+        success:function(d){
+            uname=d.uname;
+            if(d.job_id==5||d.job_id==21){
+                $("#add").hide();
+            }
+        }
+    });
+    //遍历部门下的经理
+    $.ajax({
+        type:"get",
+        url:"../../purchase/findAllUsers",
+        dataType:"json",
+        success:function(d){
+            var checkUsers=""
+            $.each(d,function (index,user) {
+                checkUsers+="<option value='"+user.u_id+"'>"+user.uname+"</option>"
+            })
+            $("#reviewer").html(checkUsers);
+        }
+    });
+    //提交审核
+    function checkOK(){
+        var reviewer=$("#reviewer").val();
+        $.ajax({
+            type:"get",
+            url:"../../purchase/submitCheck",
+            data:{"checkId":reviewer,"pid":checkPid},
+            dataType:"json",
+            success:function(d){
+               if(d>=1){
+                   alert("提交成功")
+                   window.location.href='purchaseList.html'
+               }else {
+                   alert("提交失败")
+               }
+            }
+        });
+        examinetipclose();
+    }
+    pageInfo(1,null,null,null,null,null,null);
+	var pageCount;
+    var pid=null;
+    var startTime=null;
+    var endTime=null;
+    var minPrice=null;
+    var maxPrice=null;
+    var status=null;
+    function sePur(){
+         pid=$("input[name='pid']").val();
+         startTime=$("input[name='startTime']").val();
+         endTime=$("input[name='endTime']").val();
+         minPrice=$("input[name='minPrice']").val();
+         maxPrice=$("input[name='maxPrice']").val();
+         status=$("select[name='status']").val();
+        pageInfo(1,pid,startTime,endTime,minPrice,maxPrice,status);
+        $('.m-style').pagination({
+            pageCount:pageCount,
+            jump: true,
+            coping: true,
+            homePage: '首页',
+            endPage: '末页',
+            prevContent: '上页',
+            nextContent: '下页',
+            callback: function (api) {
+                pageInfo(api.getCurrent(),pid,startTime,endTime,minPrice,maxPrice,status)
+            }
+        });
+    }
+    $('.m-style').pagination({
+      pageCount:pageCount,
+      jump: true,
+      coping: true,
+      homePage: '首页',
+      endPage: '末页',
+      prevContent: '上页',
+      nextContent: '下页',
+      callback: function (api) {
+          pageInfo(api.getCurrent(),pid,startTime,endTime,minPrice,maxPrice,status)
+      }
+    });
+    //分页信息
+    function pageInfo(page,pid,startTime,endTime,minPrice,maxPrice,status){
+      $.ajax({
+        type:"get",
+        url:"../../purchase/findAllInfo",
+        /**/
+        data:{"page":page,"pid":pid,"startTime":startTime,"endTime":endTime,"minPrice":minPrice,"maxPrice":maxPrice,"status":status},
+        dataType:"json",
+        async:false,
+        success:function(d){
+          pageCount=d.pages;
+          var html=""
+          $.each(d.list,function (index,purchase) {
+            html+="<tr>";
+            html+="<td>"+(index+1)+"</td>"
+            html+="<td>"+purchase.id+"</td>"
+            html+="<td>"+purchase.time+"</td>"
+            html+="<td>"+purchase.money+"</td>"
+            html+="<td>"+purchase.name+"</td>"
+            html+="<td>"+purchase.status+"</td>"
+            if(purchase.checkname==null){
+                html+="<td></td>"
+            }else{
+                html+="<td>"+purchase.checkname+"</td>"
+            }
+           if(purchase.checktime!=null){
+             html+="<td>"+purchase.checktime+"</td>"
+           }else{
+             html+="<td></td>"
+           }
+           html+="<td>"
+           html+="<a href='purchaseView.html?pid="+purchase.id+"' class='tablelink'> 查看详情 </a>";
+           if(purchase.status=="未审核"&&uname==purchase.name){
+                 html+="<a href='purchaseUpdate.html?pid="+purchase.id+"' class='tablelink'> 修改 </a>";
+                 html+="<a href='javascript:void(0);' class='tablelink' id='deletePurchase' pid='"+purchase.id+"'> 删除 </a>";
+                 html+="<a href='javascript:void(0);' class='tablelink' pid='"+purchase.id+"' onclick='examinetipOpen(this)'> 提交审核 </a>";
+           }else if (purchase.status=="审核未通过"&&uname==purchase.name){
+                   html+="<a href='purchaseUpdate.html?pid="+purchase.id+"' class='tablelink'> 修改 </a>";
+                   html+="<a href='javascript:void(0);' class='tablelink' pid='"+purchase.id+"' onclick='examinetipOpen(this)'> 提交审核 </a>";
+           }else if (purchase.cgStatus==1){
+                 html+="<a href='../../storage/stock/stockView.html?pid="+purchase.id+"' class='tablelink'> 入库详情 </a>";
+           }
+            html+="</td>"
+            html+="</tr>"
+          })
+          $("#purchaseList").html(html);
+          $("#pageCount").html(d.total);
+          $("#pageIndex").html(d.pageNum);
+        }
+      });
+    }
+    //删除
+    $("#purchaseList").delegate('#deletePurchase','click',function () {
+        var dStatus=confirm("请问确定删除吗？")
+        if(dStatus){
+            var dePid=$(this).attr("pid");
+            $.ajax({
+                type:"get",
+                url:"../../purchase/detelePurchase",
+                data:{"pid":dePid},
+                dataType:"json",
+                success:function(d){
+                    if(d>=1){
+                        alert("删除成功")
+                        window.location.href='purchaseList.html'
+                    }else{
+                        alert("删除失败")
+                    }
+                }
+            });
+        }
+    })
+</script>
+</body>
+</html>

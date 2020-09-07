@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StatisDao">
+    <resultMap id="PurchaseViewMap" type="com.erp.pojo.Purchase">
+        <id column="purchase_id" property="id"></id>
+        <result column="total_money" property="money"></result>
+        <result column="total_count" property="total_count"></result>
+        <result column="purchase_time" property="time"></result>
+        <result column="uname" property="name"></result>
+        <association property="cfirm" javaType="com.erp.pojo.Cfirm">
+            <result column="firm_name" property="firm_name"></result>
+        </association>
+    </resultMap>
+    <select id="findPurchaseView" resultMap="PurchaseViewMap">
+        SELECT DISTINCT c_f.firm_name,c_p.total_money,c_p.Purchase_time,c_p.purchase_id,users.uname,
+       (SELECT SUM(d.count) FROM details d WHERE d.purchase_id =c_p.purchase_id )total_count
+        FROM details d,product p,c_firm c_f,c_purchase c_p,province p1,city,users
+        WHERE d.product_id=p.product_id
+        AND p.firm_id=c_f.firm_id
+        AND d.purchase_id =c_p.purchase_id
+        AND users.U_id = c_p.creat_id
+        AND c_p.check_status='审核通过'
+        AND c_f.firm_id=#{firm_id}
+    </select>
+    <resultMap id="findPurchaseMap" type="com.erp.pojo.Purchase">
+        <id column="purchase_id" property="id"></id>
+        <result column="total_money" property="money"></result>
+        <result column="purchase_time" property="time"></result>
+        <result column="uname" property="name"></result>
+        <result column="sname" property="checkname"></result>
+        <result column="check_status" property="status"></result>
+        <result column="check_opinion" property="checkOpinion"></result>
+        <result column="check_time" property="checktime"></result>
+        <collection property="detailsList" javaType="com.erp.pojo.Details">
+            <result column="count" property="count"></result>
+            <result column="tmoney" property="money"></result>
+            <result column="purchase_price" property="price"></result>
+            <association property="product" javaType="com.erp.pojo.Product">
+                <result column="product_Model" property="name"></result>
+                <result column="Product_Unit" property="unit"></result>
+                <association property="cfirm" javaType="com.erp.pojo.Cfirm">
+                    <result column="firm_name" property="firm_name"></result>
+                </association>
+                <association property="productType" javaType="com.erp.pojo.ProductType">
+                    <result column="type_name" property="name"></result>
+                    <association property="brand" javaType="com.erp.pojo.Brand">
+                        <result column="brand_name" property="name"></result>
+                    </association>
+                </association>
+            </association>
+        </collection>
+    </resultMap>
+
+    <select id="findPurchase" resultMap="findPurchaseMap">
+        SELECT c_p.purchase_id,c_p.purchase_time,c_p.total_money,users.uname uname,
+        c_p.check_status,c_p.check_opinion,
+        (SELECT users.uname FROM users WHERE users.U_id = c_p.check_id) sname,
+        c_p.check_time,d.count,d.total_money tmoney,d.purchase_price,p.Product_Unit,p.Product_Model,c_f.firm_name,type.type_name,brand.brand_name
+        FROM c_purchase c_p,users,details d,product p,c_firm c_f,TYPE,brand
+        WHERE users.U_id = c_p.creat_id
+        AND c_p.purchase_id = d.purchase_id
+        AND p.product_id = d.product_id
+        AND p.firm_id=c_f.firm_id
+        AND type.type_id = p.type_id
+        AND brand.brand_id=type.brand_id
+        AND c_p.purchase_id = #{pid}
+
+
+    </select>
+</mapper>

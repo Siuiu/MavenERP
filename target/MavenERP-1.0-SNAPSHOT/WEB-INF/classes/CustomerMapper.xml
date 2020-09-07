@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.CustomerDao">
+    <resultMap id="customerMap" type="com.erp.pojo.Custom">
+        <id property="customId" column="customId"></id>
+        <result property="customname" column="customname"></result>
+        <result property="sex" column="sex"></result>
+        <result property="telephone" column="telephone"></result>
+        <result property="company" column="company"></result>
+        <result property="address" column="address"></result>
+        <result property="status" column="status"></result>
+        <result property="createTime" column="createTime"></result>
+        <result property="distracTime" column="distracTime"></result>
+        <result property="homeAddress" column="homeAddress"></result>
+        <result property="distract" column="distract"></result>
+        <association property="users1" javaType="com.erp.pojo.users">
+            <id property="u_id" column="u_id1"></id>
+            <result property="uname" column="uname1"></result>
+        </association>
+        <association property="users2" javaType="com.erp.pojo.users">
+            <id property="u_id" column="u_id2"></id>
+            <result property="uname" column="uname2"></result>
+        </association>
+    </resultMap>
+
+    <sql id="customer" >
+        SELECT c.*,u.uname uname1,us.uname uname2
+          FROM custom c
+          INNER JOIN users u
+          ON c.Createid = u.U_id
+          LEFT JOIN users us
+          ON c.ServiceId = us.U_id
+    </sql>
+    <sql id="customerWhere">
+        <if test="company!=null and company!=''">
+            and company like CONCAT('%',#{company},'%')
+        </if>
+        <if test="customer!=null and customer!=''">
+            and customname like CONCAT('%',#{customer},'%')
+        </if>
+        <if test="province!='' and province!=null">
+            and address like CONCAT('%',#{province},'%')
+        </if>
+        <if test="city!='' and city!=null">
+            and address like CONCAT('%',#{city},'%')
+        </if>
+    </sql>
+    <!-- 所有客户信息 -->
+    <select id="customerList" resultMap="customerMap">
+          <include refid="customer"/>
+          <where>
+              <include refid="customerWhere"></include>
+
+              <if test="status!='' and status!=null">
+                  and status = #{status}
+              </if>
+              <if test="allocation!='' and allocation!=null">
+                  <if test="allocation==1">
+                      and serviceId is not null
+                  </if>
+                  <if test="allocation==0">
+                      and serviceId is null
+                  </if>
+              </if>
+          </where>
+          order by createTime desc,distracTime desc
+    </select>
+    <!-- 客户信息浏览 -->
+    <select id="customBrowse" resultMap="customerMap">
+        <include refid="customer"/>
+        <where>
+            <include refid="customerWhere"></include>
+            <if test="position=='组员'">
+                and serviceId = #{serviceId}
+            </if>
+            and serviceId is not null
+        </where>
+        order by createTime desc
+    </select>
+    <!-- 查看客户详情 -->
+    <select id="customerView" resultMap="customerMap">
+          SELECT c.*,u.uname uname1,us.uname uname2
+          FROM custom c
+          INNER JOIN users u
+          ON c.Createid = u.U_id
+          LEFT JOIN users us
+          ON c.ServiceId = us.U_id
+          WHERE c.CustomId = #{customId}
+    </select>
+
+    <!-- 添加客户 -->
+    <insert id="customAdd" parameterType="com.erp.pojo.Custom">
+        INSERT INTO custom(customname,sex,telephone,company,address,status,createtime,createid,distract,homeaddress)
+        VALUES(#{custom.customname},#{custom.sex},#{custom.telephone},#{custom.company},
+        #{custom.address},#{custom.status},#{custom.createTime},#{createId},#{custom.distract},#{custom.homeAddress})
+    </insert>
+
+    <!-- 修改客户 -->
+    <update id="customUpdate" parameterType="com.erp.pojo.Custom">
+        UPDATE custom SET customname=#{customname},
+        sex=#{sex},telephone=#{telephone},
+        company=#{company},address=#{address},
+        status=#{status},distract=#{distract},homeaddress=#{homeAddress}
+        WHERE customId = #{customId}
+    </update>
+
+    <!-- 修改客户状态 -->
+    <update id="changeStatusCustom" parameterType="com.erp.pojo.Custom">
+        <if test="sure=='sure1'">
+            UPDATE custom SET status='不可用'
+            WHERE customId = #{customId}
+        </if>
+        <if test="sure=='sure2'">
+            UPDATE custom SET status='可用'
+            WHERE customId = #{customId}
+        </if>
+    </update>
+
+    <!-- 分配客户 -->
+    <update id="allocationCustom" parameterType="com.erp.pojo.Custom">
+        UPDATE custom SET distractime=#{distractime},serviceId=#{serviceId}
+        WHERE customId=#{customId}
+    </update>
+
+    <!-- 登录查询职位 -->
+    <select id="userPosition" resultType="com.erp.pojo.job">
+        SELECT * FROM job WHERE job_id = #{jobId}
+    </select>
+    <!-- 客户重名问题 -->
+    <select id="repeatCustomName" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM custom
+        WHERE customname = #{customname}
+    </select>
+
+</mapper>

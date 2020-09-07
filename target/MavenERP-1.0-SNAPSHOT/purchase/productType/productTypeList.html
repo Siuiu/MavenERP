@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+  <link type="text/css" rel="stylesheet" href="../../css/pagination.css" />
+<script type="text/javascript" src="../../js/jquery.js"></script>
+<script type="text/javascript">
+function tipOpen(content) {
+	$(".tipright p").text(content);
+	$("#tip").fadeIn(200);
+}
+function tipClose() {
+	$("#tip").fadeOut(200);
+}
+</script>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li>采购管理</li>
+    <li>商品类型管理</li>
+    <li>基本内容</li>
+  </ul>
+</div>
+<div class="rightinfo">
+  <form action="" method="post">
+    <ul class="tools">
+      <li> 品牌名称:
+        <select id="bid">
+
+        </select>
+      </li>
+      <li> 商品类型名称:
+        <input type="text" id="tname"/>
+      </li>
+      <li> 状态：
+        <select id="status">
+          <option value="">请选择</option>
+          <option value="1">可用</option>
+          <option value="0">不可用</option>
+        </select>
+      </li>
+      <li class="subBut" id="queryType"><img src="../../images/t06.png" />查询</li>
+      <li class="subBut" id="add" onclick="window.location.href='productTypeAdd.html'"><img src="../../images/t01.png" />添加</li>
+    </ul>
+    <table class="tablelist">
+      <thead>
+        <tr>
+          <th>序号</th>
+          <th>品牌名称</th>
+          <th>商品类型名称</th>
+          <th>状态</th>
+          <th>创建时间</th>
+          <th>创建人</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="typeList">
+        <!--<tr>
+          <td>1</td>
+          <td>联想</td>
+          <td>笔记本</td>
+          <td>可用</td>
+          <td>2013-09-09 15:05:05</td>
+          <td>管理员</td>
+          <td>
+            <a href="productTypeUpdate.html" class="tablelink">修改</a>
+            <a href="javascript:void(0)" class="tablelink" onclick="tipOpen('是否确认注销此条信息？')">注销</a>
+          </td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>海尔</td>
+          <td>电视机</td>
+          <td>不可用</td>
+          <td>2013-09-09 15:05:05</td>
+          <td>管理员</td>
+          <td>
+            <a href="productTypeUpdate.html" class="tablelink">修改</a>
+            <a href="javascript:void(0)" class="tablelink" onclick="tipOpen('是否确认恢复此条信息？')">恢复</a>
+          </td>
+        </tr>-->
+      </tbody>
+    </table>
+    <div class="pagin">
+      <div class="message">共<i class="blue" id="pageCount">1245</i>条记录，当前显示第&nbsp;<i class="blue" id="pageIndex">0&nbsp;</i>页</div>
+      <div class="m-style"></div>
+    </div>
+  </form>
+  <!-- 提示框 -->
+  <div id="tip" class="tip">
+    <div class="tiptop"><span>提示信息</span><a onclick="tipClose()"></a></div>
+    <div class="tipinfo"> <span><img src="../../images/ticon.png" /></span>
+      <div class="tipright">
+        <p></p>
+        <cite>如果是请点击确定按钮 ，否则请点取消。</cite> </div>
+    </div>
+    <div class="tipbtn">
+      <input name="" type="button"  class="sure" value="确定" onclick="tipClose()" />
+      &nbsp;
+      <input name="" type="button"  class="cancel" value="取消" onclick="tipClose()" />
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script src="../../js/jquery.pagination.js"></script>
+<script type="text/javascript">
+    var jobId;
+    $.ajax({
+      type:"get",
+      url:"../../purchase/getUser",
+      dataType:"json",
+      async:false,
+      success:function(d){
+        jobId=d.job_id;
+        if(jobId==21){
+          $("#add").hide();
+        }
+      }
+    });
+    //查询品牌
+    var brandHmtl=""
+    var page=1;
+    $.ajax({
+      type:"get",
+      url:"../../Brand/seBrandAllInfo",
+      data:{"status":"0"},
+      dataType:"json",
+      success:function(d){
+        brandHmtl+="<select onchange='seType(this)'>";
+        brandHmtl+="<option value=''>请选择</option>"
+        $.each(d,function (index,brand) {
+          brandHmtl+="<option value='"+brand.id+"'>"+brand.name+"</option>";
+        })
+        brandHmtl+="</select>";
+        $("#bid").html(brandHmtl)
+      }
+    })
+    pageInfo(1,null,null,null);
+    var pageCount;
+    var bid=null;
+    var tname=null;
+    var status=null;
+    $("#queryType").click(function () {
+      bid=$("#bid").val();
+      tname=$("#tname").val();
+      status=$("#status").val();
+      pageInfo(1,bid,tname,status);
+      $('.m-style').pagination({
+        pageCount:pageCount,
+        jump: true,
+        coping: true,
+        homePage: '首页',
+        endPage: '末页',
+        prevContent: '上页',
+        nextContent: '下页',
+        callback: function (api) {
+          page=api.getCurrent();
+          pageInfo(api.getCurrent(),bid,tname,status);
+        }
+      });
+    })
+    $('.m-style').pagination({
+      pageCount:pageCount,
+      jump: true,
+      coping: true,
+      homePage: '首页',
+      endPage: '末页',
+      prevContent: '上页',
+      nextContent: '下页',
+      callback: function (api) {
+        page=api.getCurrent();
+        if(status=="null"){
+          status="";
+        }
+        pageInfo(api.getCurrent(),bid,tname,status)
+      }
+    });
+
+    //分页信息
+    function pageInfo(page,bid,tname,status){
+      $.ajax({
+        type:"get",
+        url:"../../productType/findAllInfo",
+        data:{"page":page,"bid":bid,"tname":tname,"status":status},
+        dataType:"json",
+        async:false,
+        success:function(d){
+          pageCount=d.pages;
+          var tbody="";
+          $.each(d.list,function (index,type) {
+            tbody+="<tr><td>"+(++index)+"</td>"
+            tbody+="<td>"+type.brand.name+"</td>";
+            tbody+="<td>"+type.name+"</td>";
+            tbody+="<td>"+(type.status==1?"可用":"不可用")+"</td>";
+            tbody+="<td>"+type.time+"</td>";
+            tbody+="<td>"+type.user.uname+"</td><td>";
+            if(jobId!=21){
+              if(type.status==1){
+                tbody+="<a href='productTypeUpdate.html?tid="+type.id+"' class='tablelink'> 修改 </a>";
+              }
+              tbody+="<a href='javascript:void(0)' class='tablelink' onclick='updateStatus("+type.id+","+(type.status==1?"0":"1")+")'>"+(type.status==1?" 注销 ":" 恢复 ")+"</a></td>"
+            }else {
+              tbody+="</td>";
+            }
+
+          })
+          $("#typeList").html(tbody);
+          $("#pageCount").html(d.total);
+          $("#pageIndex").html(d.pageNum);
+          $('.tablelist tbody tr:odd').addClass('odd');
+        }
+      });
+    }
+    function updateStatus(upTid,upStatus) {
+      $.ajax({
+        type:"get",
+        url:"../../productType/updateType",
+        data:{"tid":upTid,"bid":null,"status":upStatus,"tname":null},
+        dataType:"json",
+        success:function(d){
+          if(d==0){
+            alert("父级商品处于禁用状态")
+          }else if(d>=1){
+            if(status=="null"){
+              status="";
+            }
+            pageInfo(page,bid,tname,status)
+          }else {
+            alert("修改失败")
+          }
+        }
+      })
+    }
+</script>
+</body>
+</html>

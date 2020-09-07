@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../laydate/laydate.js"></script>
+<script type="text/javascript"  src="../../js/jquery-1.8.2.min.js"></script>
+<style type="text/css">
+  #birthday{
+    padding-right: 0;
+    height: 32px;
+    line-height: 32px;
+  }
+</style>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li><a href="userList.html">系统管理</a></li>
+    <li><a href="userList.html">用户管理</a></li>
+    <li><a href="#">添加</a></li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>员工信息</span></div>
+  <ul class="forminfo">
+    <li>
+      <label>员工编号</label>
+      <input name="" type="text" class="dfinput" id="u_id"/>
+      <i id="testid">必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>员工姓名</label>
+      <input name="" type="text" class="dfinput" id="uname"/>
+      <i id="testname">必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>密码</label>
+      <input name="" type="password" class="dfinput" id="pwd"/>
+      <i id="testpwd">必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>性别</label>
+      <cite>
+          <input name="gender" type="radio" value="男" checked="checked" />男
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <input name="gender" type="radio" value="女" />女
+      </cite>
+    </li>
+    <li>
+      <label>联系方式</label>
+      <input name="" type="text" value="" class="dfinput" id="tel" />
+      <i>必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>出生年月</label>
+      <input name=""  id="birthday" value="" type="text">
+    </li>
+    <li>
+      <label>所属部门</label>
+      <select name="" class="dfselect" id="dept">
+
+      </select>
+    </li>
+    <li>
+      <label>职位</label>
+      <select name="" class="dfselect" id="job">
+
+      </select>
+    </li>
+    <li>
+      <label>&nbsp;</label>
+      <input name="" type="button" class="btn" value="确认保存" id="save"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input name="" type="button" class="btn" value="返回"  onclick="window.history.go(-1);"/>
+    </li>
+  </ul>
+</div>
+<script type="text/javascript">
+
+$(function () {
+
+
+
+$("#u_id").blur(function () {
+  $.ajax({
+    url:"testUid",
+    type:"post",
+    data:{"u_id":$("#u_id").val()},
+    success:function (d) {
+      if(d=="success"){
+        $("#testid").html("正确");
+      }
+      else{
+        $("#testid").html("该编码已被占用");
+      }
+    }
+  });
+});
+
+
+
+$("#uname").blur(function () {
+  $.ajax({
+    url:"testUname",
+    type:"post",
+    data:{"uname":$("#uname").val()},
+    success:function (d) {
+      if(d=="success"){
+        $("#testname").html("正确");
+      }
+      else{
+        $("#testname").html("该员工已存在");
+      }
+    }
+  });
+})
+
+ $("#pwd").blur(function () {
+  if($("#pwd").val()==null&&$("#pwd").val()==''){
+      $("#testpwd").html("密码不能为空");
+  }
+  else{
+    $("#testpwd").html("正确");
+  }
+ })
+
+
+  showdept();
+
+$("#dept").change(function () {
+  var id=$(this).val();
+
+  showjob(id);
+})
+
+
+$("#save").click(function () {
+    $.ajax({
+      url:"savauser",
+      type:"post",
+      data:JSON.stringify({"u_id":$("#u_id").val(),"uname":$("#uname").val(),"upassword":$("#pwd").val(),"sex":$('input[name="gender"]:checked').val(),"utelephone":$("#tel").val(),"birthday":$("#birthday").val(),"dept_id":$("#dept").val(),"job_id":$("#job").val()}),
+      contentType : "application/json;charset=UTF-8",
+      dataType:"json",
+      success:function (d) {
+        if(d!=0){
+          alert("保存成功");
+        }
+        else{
+          alert("保存失败");
+        }
+      }
+    });
+})
+
+})
+
+
+
+  function  showdept() {
+    $.ajax({
+      url: "deptlist",
+      type: "get",
+      sync:false,
+      dataType: "json",
+      success:function (d) {
+        var p="<option value=''>请选择</option>";
+        $.each(d,function (index,dept) {
+          p+=" <option value='"+dept.dept_id+"'>"+dept.dept_name+"</option>";
+        })
+        $("#dept").append(p);
+      }
+    })
+  }
+
+  function showjob(id) {
+    $.ajax({
+      url:"showjob",
+      type:"get",
+      data:{"deptid":id},
+      dataType: "json",
+      success:function (d) {
+        $("#job option").remove();
+        var op="<option value=''>请选择</option>";
+        $.each(d,function (index,item) {
+          op+=" <option value='"+item.job_id+"'>"+item.job_name+"</option>";
+        });
+        $("#job").append(op);
+      }
+    });
+  }
+</script>
+</body>
+</html>

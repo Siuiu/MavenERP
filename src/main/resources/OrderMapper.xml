@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.OrderDao">
+    <resultMap id="orderMap" type="com.erp.pojo.Order">
+        <id property="orderId" column="orderId"></id>
+        <result property="orderTime" column="orderTime"></result>
+        <result property="orderMoney" column="orderMoney"></result>
+        <result property="status" column="status"></result>
+        <result property="checTime" column="checTime"></result>
+        <result property="opinion" column="opinion"></result>
+        <result property="dd_state" column="dd_state"></result>
+        <association property="custom" javaType="com.erp.pojo.Custom">
+            <id property="customId" column="customId"></id>
+            <result property="customname" column="customname"></result>
+            <result property="telephone" column="telephone"></result>
+            <association property="users1" javaType="com.erp.pojo.users">
+                <id property="u_id" column="u_id1"></id>
+                <result property="uname" column="uname1"></result>
+            </association>
+            <association property="users2" javaType="com.erp.pojo.users">
+                <id property="u_id" column="u_id2"></id>
+                <result property="uname" column="uname2"></result>
+            </association>
+        </association>
+        <collection property="orderDetails" javaType="com.erp.pojo.OrderDetails">
+            <id property="details_id" column="details_id"></id>
+            <result property="proprice" column="proprice"></result>
+            <result property="purchase_num" column="purchase_num"></result>
+            <result property="prototal" column="prototal"></result>
+            <association property="product" javaType="com.erp.pojo.Product">
+                <id property="id" column="product_id"></id>
+                <result property="name" column="product_model"></result>
+                <association property="productType" javaType="com.erp.pojo.ProductType">
+                    <id property="id" column="type_id"></id>
+                    <result property="name" column="type_name"></result>
+                    <association property="brand" javaType="com.erp.pojo.Brand">
+                        <id property="id" column="brand_id"></id>
+                        <result property="name" column="brand_name"></result>
+                    </association>
+                </association>
+            </association>
+        </collection>
+    </resultMap>
+    <!-- 查看所有订单 -->
+    <select id="orderList" resultMap="orderMap">
+        SELECT o.*,c.customname,c.telephone,us.uname uname2,u.uname uname1
+        FROM erp.order o
+        LEFT JOIN custom c
+        ON o.customId = c.customId
+        LEFT JOIN users us
+        ON o.operatorId = us.u_id
+        LEFT JOIN users u
+        ON o.checkId = u.u_id
+        <where>
+            <if test="position=='组员'">
+                and operatorId = #{operatorId}
+            </if>
+            <if test="position=='非组员'">
+                and checkid = #{operatorId}
+            </if>
+            <if test="orderId!=null and orderId!=''">
+                and orderId like CONCAT('%',#{orderId},'%')
+            </if>
+            <if test="customName!=null and customName!=''">
+                and customName like CONCAT('%',#{customName},'%')
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and orderTime &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and orderTime &lt;= #{endTime}
+            </if>
+            <if test="minMoney!=null and minMoney!=''">
+                and orderMoney &gt;= #{minMoney}
+            </if>
+            <if test="maxMoney!=null and maxMoney!=''">
+                and orderMoney &lt;= #{maxMoney}
+            </if>
+            <if test="status!=null and status!=''">
+                and o.status = #{status}
+            </if>
+        </where>
+        ORDER BY o.Status ASC,o.orderTime DESC,o.chectime DESC
+    </select>
+
+    <!-- 判断客户是否存在 -->
+    <select id="judgeCustomName" resultType="com.erp.pojo.Custom">
+        SELECT * FROM custom
+        WHERE ServiceId = #{serviceId} AND customname = #{customName} and status = '可用'
+    </select>
+
+    <!-- 增加客户订单 -->
+    <insert id="addOrder" parameterType="com.erp.pojo.Order">
+        INSERT INTO erp.order(orderId,customId,orderTime,orderMoney,operatorId,STATUS)
+        VALUES(#{orderId},#{custom.customId},#{orderTime},#{orderMoney},
+        #{custom.users2.u_id},#{status})
+    </insert>
+    <!-- 增加客户订单详情 -->
+    <insert id="addOrderDetails" parameterType="com.erp.pojo.OrderDetails">
+        INSERT INTO orderdetails(order_id,product_id,proprice,purchase_num,prototal)
+        VALUES(#{order_id},#{product_id},#{proprice},
+        #{purchase_num},#{prototal})
+    </insert>
+    <!-- 修改订单 -->
+    <update id="updateOrder" parameterType="com.erp.pojo.Order">
+        UPDATE erp.order SET customId = #{custom.customId},orderTime = #{orderTime},orderMoney = #{orderMoney}
+        WHERE orderId = #{orderId}
+    </update>
+    <!-- 删除订单详情 -->
+    <delete id="deleteOrderDetails">
+        DELETE FROM orderdetails
+        WHERE order_Id = #{orderId}
+    </delete>
+    <!-- 删除订单及订单详情 -->
+    <delete id="deleteOrder">
+        DELETE o,od FROM erp.order o,orderdetails od
+        WHERE o.OrderId=od.Order_id
+        AND o.OrderId = #{orderId}
+    </delete>
+    <!-- 查看订单详情 -->
+    <select id="viewOrder" resultMap="orderMap">
+        SELECT o.*,c.customname,c.telephone,us.uname uname2,u.uname uname1,
+        od.details_id,od.proprice,od.purchase_num,od.Prototal,
+        p.product_id,p.product_model,t.type_id,t.type_name,b.brand_id,b.brand_name
+        FROM erp.order o
+        LEFT JOIN custom c
+        ON o.customId = c.customId
+        LEFT JOIN users us
+        ON o.operatorId = us.u_id
+        LEFT JOIN users u
+        ON o.checkId = u.u_id
+        RIGHT JOIN orderdetails od
+        ON o.orderId = od.Order_id
+        LEFT JOIN product p
+        ON od.Product_id = p.product_id
+        LEFT JOIN TYPE t
+        ON p.type_id = t.type_id
+        LEFT JOIN brand b
+        ON t.brand_id = b.brand_id
+        WHERE orderId = #{orderId}
+    </select>
+    <!-- 提交审核 -->
+    <update id="auditCustom">
+        UPDATE erp.order SET checkid = #{checkId},STATUS = '1',checTime = null,opinion = null
+        WHERE orderId = #{orderId}
+    </update>
+    <!-- 审核订单 -->
+    <update id="auditOrder">
+        UPDATE erp.order SET opinion = #{opinion},STATUS = #{status},checTime = #{checTime}
+        WHERE orderId = #{orderId}
+    </update>
+</mapper>

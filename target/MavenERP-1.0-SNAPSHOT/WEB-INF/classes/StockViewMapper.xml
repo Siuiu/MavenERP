@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StatisDao">
+    <resultMap id="StockViewMap" type="com.erp.pojo.Rk_warehouse">
+        <result column="total_count" property="count"></result>
+        <result column="rk_indent" property="rk_indent"></result>
+        <result column="rk_date" property="rk_date"></result>
+        <association property="warehouse" javaType="com.erp.pojo.Warehouse">
+            <result column="c_name" property="c_name"></result>
+            <result column="c_Address" property="c_address"></result>
+        </association>
+        <association property="purchase" javaType="com.erp.pojo.Purchase">
+            <result column="total_money" property="money"></result>
+        </association>
+        <association property="users" javaType="com.erp.pojo.users">
+            <result column="uname" property="uname"></result>
+        </association>
+    </resultMap>
+    <select id="findStockView" resultMap="StockViewMap">
+        SELECT w.c_name,users.uname,w.c_address,c_p.total_money,rk.rk_indent,rk.rk_date,
+        (SELECT SUM(d.Count) FROM details d  WHERE rk.rk_indent = d.purchase_id ) total_count
+        FROM warehouse w,users,rk_warehouse rk,c_purchase c_p
+        WHERE users.U_id=rk.user_id
+        AND rk.warehouse_id =w.id
+        AND c_p.purchase_id = rk.rk_indent
+        AND rk.state = 2
+        AND w.c_name=#{c_name}
+    </select>
+</mapper>

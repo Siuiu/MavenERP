@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper
+                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.FirmDao">
+    <select id="cascadeQueries" resultType="com.erp.pojo.Cfirm">
+        SELECT firm_id,firm_name FROM c_firm
+    </select>
+    <select id="findAllInfo" resultType="com.erp.pojo.Cfirm" >
+        SELECT f.firm_id,f.firm_name,f.firm_founder,f.firm_tel,CONCAT(p.p_name,c.c_name) firm_city,f.status,f.firm_date,u.uname
+        FROM c_firm f
+        JOIN city c ON c.id=f.firm_city
+        JOIN province p ON p.id=c.p_id
+        JOIN users u ON u.U_id=f.creat_id
+        <where>
+            <if test="fname!='null' and fname!='' and fname!=null ">
+                f.firm_name LIKE concat('%',#{fname},'%')
+            </if>
+            <if test="founder!='null' and founder!='' and founder!=null ">
+                and f.firm_founder LIKE concat('%',#{founder},'%')
+            </if>
+            <if test="cid!=null">
+                and c.p_id=#{cid}
+            </if>
+            <if test="pid!=null ">
+                and p.id=#{pid}
+            </if>
+            <if test="status!=null ">
+                and status=#{status}
+            </if>
+
+        </where>
+    </select>
+    <select id="selectFidInfo" resultType="com.erp.pojo.Cfirm" >
+        SELECT f.firm_id,f.firm_name,f.firm_founder,f.firm_tel,f.firm_address,p.p_name,c.c_name,f.firm_content,f.status,f.firm_date,u.uname
+        FROM c_firm f
+        JOIN city c ON c.id=f.firm_city
+        JOIN province p ON p.id=c.p_id
+        JOIN users u ON u.U_id=f.creat_id
+        where f.firm_id=#{fid}
+    </select>
+    <insert id="insertFirm">
+        INSERT INTO c_firm VALUES (NULL,#{fname},#{founder},#{tel},#{cid},NOW(),#{status},#{uid},#{content},#{address})
+    </insert>
+    <update id="updateFirm">
+        UPDATE c_firm f SET f.firm_name=#{fname},f.firm_founder=#{founder},f.firm_tel=#{tel},f.firm_city=#{cid},STATUS=#{status},firm_content=#{content},f.firm_address=#{address} WHERE f.firm_id=#{fid}
+    </update>
+    <update id="updateStatus">
+        UPDATE c_firm f,product p SET f.status=#{status},p.product_status=#{status} WHERE f.firm_id=p.firm_id AND f.firm_id=#{fid}
+    </update>
+    <select id="queryFirmName" resultType="com.erp.pojo.Cfirm">
+        SELECT * FROM c_firm WHERE firm_name=#{fname}
+    </select>
+</mapper>

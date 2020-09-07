@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.CommonDao">
+    <resultMap id="ProvinceMap" type="com.erp.pojo.province">
+        <id column="id" property="id"></id>
+        <result column="p_name" property="p_name"></result>
+        <result column="p_number" property="p_number"></result>
+        <collection property="setcity" javaType="com.erp.pojo.city">
+            <id column="cid" property="id"></id>
+            <result column="p_id" property="p_id"></result>
+            <result column="c_name" property="c_name"></result>
+        </collection>
+    </resultMap>
+    <!-- 查找省份 -->
+    <select id="findProvince" resultMap="ProvinceMap" >
+        SELECT p.*,city.id cid,city.c_name,city.p_id FROM province p ,city
+        WHERE p.id = city.p_id
+    </select>
+    <!-- 查找组员职位 -->
+    <select id="findUserJob" resultType="com.erp.pojo.job">
+        SELECT * FROM job
+        WHERE job_dept_id = #{deptId}
+        AND job_name like CONCAT('%',#{job_name},'%')
+    </select>
+    <!-- 查找指定组员名字 -->
+    <select id="findUserName" resultType="com.erp.pojo.users">
+        SELECT * FROM users
+        WHERE job_id = #{jobId} and status_id = 1
+    </select>
+
+</mapper>

@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li>采购管理</li>
+    <li>商品类型管理</li>
+    <li>修改</li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>商品类型信息</span></div>
+  <ul class="forminfo">
+    <li>
+      <label>品牌名称</label>
+      <select class="dfselect" id="bname">
+          <!--<option selected="selected">联想</option>
+          <option>海尔</option>-->
+        </select>
+      <i>必选</i>
+    </li>
+    <li>
+      <label>商品类型名称</label>
+      <input name="" type="text" value="笔记本" class="dfinput" id="tname"/>
+      <i>必填，不能超过50个字符</i>
+    </li>
+    <li>
+      <label>状态</label>
+      <select class="dfselect" id="status">
+          <option value="1">可用</option>
+          <option value="0">不可用</option>
+        </select>
+      <i>必选</i>
+    </li>
+    <li>
+      <label>创建人</label>
+      <input name="" type="text" value="马云" id="uname" readonly="readonly" class="roinput" />
+      <i>不能编辑</i>
+    </li>
+    <li>
+      <label>创建时间</label>
+      <input name="" type="text" value="2017-11-18 15:36:10" id="createTime" readonly="readonly" class="roinput" />
+      <i>不能编辑</i>
+    </li>
+    <li>
+      <label>&nbsp;</label>
+      <input name="" type="button" class="btn" id="update" value="确定"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input name="" type="button" class="btn" value="返回" onclick="window.location.href='productTypeList.html'"/>
+    </li>
+  </ul>
+</div>
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript">
+  var tid=getParam("tid");
+  $.ajax({
+    type: "get",
+    url: "../../productType/tidFindInfo",
+    data: {"tid": tid},
+    dataType: "json",
+    success: function (d) {
+      var brandHmtl=""
+      $.ajax({
+        type:"get",
+        url:"../../Brand/seBrandAllInfo",
+        data:{"status":"1"},
+        dataType:"json",
+        success:function(b){
+          brandHmtl+="<option value=''>请选择</option>"
+          $.each(b,function (index,brand) {
+            if(brand.name==d.brand.name){
+              brandHmtl+="<option value='"+brand.id+"' selected='selected'>"+brand.name+"</option>";
+            }else{
+              brandHmtl+="<option value='"+brand.id+"'>"+brand.name+"</option>";
+            }
+          })
+          $("#bname").html(brandHmtl)
+        }
+      })
+      $("#tname").val(d.name);
+      var statusHtml=""
+      if(d.status==1){
+        statusHtml="<option value='1' selected='selected'>可用</option><option value='0' >不可用</option>"
+      }else{
+        statusHtml="<option value='1'>可用</option><option value='0' selected='selected'>不可用</option>";
+      }
+      $("#status").html(statusHtml)
+      $("#createTime").val(d.time);
+      $("#uname").val(d.user.uname);
+    }
+  });
+  $("#update").click(function () {
+    var bid=$("#bname").val();
+    var status=$("#status").val();
+    var tname=$("#tname").val()
+    if(bid==""||bid==null||bid==undefined){
+      alert("请选择品牌名");
+      return;
+    }
+    if(status==""||status==null||status==undefined){
+      alert("请选择状态");
+      return;
+    }
+    if(tname==""||tname==null||tname==undefined){
+      alert("请输入类型名");
+      return;
+    }
+
+    $.ajax({
+      type:"get",
+      url:"../../productType/updateType",
+      data:{"tid": tid,"bid":bid,"status":status,"tname":tname},
+      dataType:"json",
+      success:function(d){
+        if(d>=1){
+          window.location.href='productTypeList.html'
+        }else {
+          alert("修改失败")
+        }
+      }
+    })
+  })
+  function getParam(paramName) {
+    paramValue = "", isFound = !1;
+    if (this.location.search.indexOf("?") == 0 && this.location.search.indexOf("=") > 1) {
+      arrSource = unescape(this.location.search).substring(1,
+              this.location.search.length).split("&"), i = 0;
+      while (i < arrSource.length && !isFound) arrSource[i].indexOf("=") > 0 &&
+      arrSource[i].split("=")[0].toLowerCase() == paramName.toLowerCase() && (paramValue = arrSource[i].split("=")[1], isFound = !0), i++
+    }
+    return paramValue == "" && (paramValue = null), paramValue
+  }
+</script>
+</body>
+</html>

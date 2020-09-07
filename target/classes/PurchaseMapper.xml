@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.PurchaseDao">
+    <resultMap id="sePur" type="com.erp.pojo.Purchase">
+        <id column="id" property="id"></id>
+        <result column="time" property="time"></result>
+        <result column="name" property="name"></result>
+        <result column="status" property="status"></result>
+        <result column="checkname" property="checkname"></result>
+        <result column="checktime" property="checktime"></result>
+        <result column="money" property="money"></result>
+        <result column="cgStatus" property="cgStatus"></result>
+    </resultMap>
+    <resultMap id="quPid" type="com.erp.pojo.Purchase">
+        <id column="id" property="id"></id>
+        <result column="time" property="time"></result>
+        <result column="name" property="name"></result>
+        <result column="status" property="status"></result>
+        <result column="checkname" property="checkname"></result>
+        <result column="checktime" property="checktime"></result>
+        <result column="money" property="money"></result>
+        <result column="check_opinion" property="checkOpinion"></result>
+        <association property="warehouse" javaType="com.erp.pojo.Warehouse">
+            <id column="wid" property="id"></id>
+            <result column="rkname" property="name"></result>
+            <result column="state" property="state"></result>
+            <result column="rk_date" property="creation_time"></result>
+            <result column="c_name" property="c_name"></result>
+        </association>
+        <collection property="detailsList" ofType="com.erp.pojo.Details">
+            <result column="count" property="count"></result>
+            <result column="purchase_price" property="price"></result>
+            <result column="total_money" property="money"></result>
+            <association property="product" javaType="com.erp.pojo.Product">
+                <id column="pid" property="id"></id>
+                <result property="name" column="product_model"></result>
+                <result column="product_unit" property="unit"></result>
+                <association property="cfirm" javaType="com.erp.pojo.Cfirm">
+                    <result property="firm_name" column="firm_name"></result>
+                </association>
+            </association>
+            <association property="type" javaType="com.erp.pojo.ProductType">
+                <result property="name" column="type_name"></result>
+                <association property="brand" javaType="com.erp.pojo.Brand">
+                    <result property="name" column="brand_name"></result>
+                </association>
+            </association>
+        </collection>
+    </resultMap>
+    <select id="findAllInfo" resultMap="sePur">
+        SELECT  p.purchase_id id,p.purchase_time TIME,u.uname NAME,p.check_status STATUS,uc.uname checkname,p.check_time checktime,p.total_money money,p.cg_state cgStatus,p.check_id
+        FROM c_purchase p JOIN users u ON p.creat_id=u.U_id
+        LEFT JOIN users uc ON p.check_id=uc.U_id
+        <where>
+            <if test="pid!='null' and pid!='' ">
+                p.purchase_id LIKE concat('%',#{pid},'%')
+            </if>
+            <if test="startTime!='null' and startTime!='' and startTime!=null">
+                and p.purchase_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!='null' and endTime!='' and endTime!=null">
+                and p.purchase_time &lt;= #{endTime}
+            </if>
+            <if test="minPrice!='null' and minPrice!='' ">
+                and p.total_money >= #{minPrice}
+            </if>
+            <if test="maxPrice!='null' and maxPrice!='' ">
+                and p.total_money &lt;=  #{maxPrice}
+            </if>
+            <if test="status!='null' and status!='' ">
+                and p.check_status=#{status}
+            </if>
+            <if test="uid!=null">
+                and p.creat_id=#{uid}
+            </if>
+        </where>
+    </select>
+    <select id="pidInfo" resultMap="quPid">
+        SELECT  p.purchase_id id,p.purchase_time TIME,u.uname NAME,p.check_status STATUS,
+uc.uname checkname,p.check_time checktime,p.total_money money,p.check_opinion,
+rku.uname rkname,rk.state,rk.rk_date,war.c_name,pro.product_model,d.count,pro.product_unit,d.purchase_price,d.total_money,cf.firm_name,b.brand_name,ty.type_name,pro.product_id pid,war.id wid
+        FROM c_purchase p JOIN users u ON p.creat_id=u.U_id
+          JOIN users uc ON p.check_id=uc.U_id
+          JOIN rk_warehouse rk ON p.purchase_id=rk.rk_indent
+          JOIN users rku ON rk.user_id=rku.U_id
+          JOIN warehouse war ON rk.warehouse_id=war.id
+          JOIN details d ON p.purchase_id=d.purchase_id
+          JOIN product pro ON pro.product_id=d.product_id
+          JOIN c_firm cf ON pro.firm_id=cf.firm_id
+          JOIN TYPE ty ON pro.type_id=ty.type_id
+          JOIN brand b ON b.brand_id=ty.brand_id
+            WHERE p.purchase_id=#{pid}
+    </select>
+    <insert id="creatPurchase">
+        INSERT INTO c_purchase (purchase_id,creat_id,purchase_time,total_money)VALUES(#{id},#{creatUser.u_id},#{creatTime},#{money})
+    </insert>
+    <insert id="creatDetails">
+        INSERT INTO details VALUES
+        <foreach collection="list" open="" close="" item="d" separator=",">
+            (null,#{d.pid},#{d.productId},#{d.price},#{d.count},#{d.money})
+        </foreach>
+    </insert>
+    <delete id="deletePurchase">
+        DELETE p,d FROM c_purchase p LEFT JOIN details d ON p.purchase_id=d.purchase_id WHERE p.purchase_id=#{pid}
+    </delete>
+    <select id="findAllUsers" resultType="com.erp.pojo.users">
+        SELECT uname,U_id FROM users WHERE job_id=5
+    </select>
+    <update id="submitCheck">
+        UPDATE c_purchase SET check_id=#{checkId},check_status='审核中' WHERE purchase_id=#{pid}
+    </update>
+    <select id="findCheckAll" resultMap="seCheck">
+        SELECT purchase_id,purchase_time,total_money,u.uname,check_status,us.uname checkname FROM c_purchase p JOIN users u ON p.creat_id=u.U_id JOIN users us ON us.U_id=p.check_id
+        WHERE check_status='审核中'
+        <if test="checkId!=null">
+            AND p.check_id=#{checkId}
+        </if>
+        <if test="pid!='null' and pid!='' ">
+            and p.purchase_id LIKE concat('%',#{pid},'%')
+        </if>
+        <if test="startTime!='null' and startTime!='' and startTime!=null">
+            and p.purchase_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!='null' and endTime!='' and endTime!=null">
+            and p.purchase_time &lt;= #{endTime}
+        </if>
+        <if test="minPrice!='null' and minPrice!='' ">
+            and p.total_money >= #{minPrice}
+        </if>
+        <if test="maxPrice!='null' and maxPrice!='' ">
+            and p.total_money &lt;=  #{maxPrice}
+        </if>
+    </select>
+    <resultMap id="seCheck" type="com.erp.pojo.Purchase">
+        <id column="purchase_id" property="id"></id>
+        <result column="purchase_time" property="time"></result>
+        <result column="uname" property="name"></result>
+        <result column="total_money" property="money"></result>
+        <result column="check_status" property="status"></result>
+        <result column="checkname" property="checkname"></result>
+    </resultMap>
+    <update id="checkPurchase">
+        UPDATE c_purchase SET check_opinion=#{checkOpinion},check_time=NOW(),check_status=#{status} WHERE purchase_id=#{pid}
+    </update>
+    <delete id="deleteDetails">
+        DELETE FROM details WHERE purchase_id=#{pid}
+    </delete>
+    <update id="updatePurchaseTotalPrice">
+        UPDATE c_purchase SET total_money=#{totalPrice} WHERE purchase_id=#{pid}
+    </update>
+</mapper>

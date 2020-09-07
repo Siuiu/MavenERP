@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>部门管理</title>
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="../../laydate/laydate.js"></script>
+</head>
+
+<body>
+<div class="place"> <span>位置：</span>
+  <ul class="placeul">
+    <li><a href="../users/userList.html">系统管理</a></li>
+    <li><a href="deptList.html">部门管理</a></li>
+    <li><a href="#">修改</a></li>
+  </ul>
+</div>
+<div class="formbody">
+  <div class="formtitle"><span>部门信息</span></div>
+  <ul class="forminfo">
+    <li>
+      <label>部门编号</label>
+      <input name="" type="text" value="" id="dept_id" class="dfinput" readonly/>
+      <i>必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>部门名称</label>
+      <input name="" type="text" value="" id="dept_name" class="dfinput" />
+      <i>必填，不能超过30个字符</i>
+    </li>
+    <li>
+      <label>所属区域</label>
+      <select class="dfselect" id="province">
+
+      </select>
+      省
+      <select class="dfselect" id="city">
+
+      </select>
+      市
+      <i>必选</i>
+    </li>
+
+    <li>
+      <label>&nbsp;</label>
+      <input name="" type="button" class="btn" id="updateDept" value="确认保存"/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <input name="" type="button" class="btn" value="返回"  onclick="window.history.go(-1);"/>
+    </li>
+  </ul>
+</div>
+<script type="text/javascript">
+  $(function () {
+var dept_id=getParams("dept_id");
+    provincelist();
+
+    $("#province").change(function () {
+      var id=$(this).val();
+      citylist(id);
+    });
+
+$.ajax({
+  url:"dept_updateshowdept",
+  type:"get",
+  data:{"dept_id":dept_id},
+  dataType:"json",
+  success:function (d) {
+      $("#dept_id").val(d.dept_id);
+      $("#dept_name").val(d.dept_name);
+  }
+});
+
+
+$("#updateDept").click(function () {
+  var dept_id=$("#dept_id").val();
+  var  dept_name=$("#dept_name").val();
+  var p_id=$("#province").val();
+  var c_id=$("#city").val();
+
+  $.ajax({
+    url:"updateDept",
+    type:"get",
+    data:{"dept_id":dept_id,"dept_name":dept_name,"p_id":p_id,"c_id":c_id},
+    dataType:"json",
+    success:function (d) {
+      if(d!=0){
+        alert("修改成功");
+      }
+      else{
+        alert("修改失败");
+      }
+
+    }
+  });
+
+
+
+});
+
+
+  })
+
+
+  function citylist(id) {
+    $.ajax({
+      url:"showcity",
+      type:"get",
+      data:{"p_id":id},
+      dataType: "json",
+      success:function (d) {
+        $("#city option").remove();
+        var op="<option value=''>请选择</option>";
+        $.each(d,function (index,item) {
+          op+=" <option value='"+item.id+"'>"+item.c_name+"</option>";
+        });
+        $("#city").append(op);
+      }
+    });
+
+  }
+
+  function provincelist() {
+    $.ajax({
+      url:"findProvince",
+      type:"get",
+      dataType:"json",
+      success:function (d) {
+        var op="<option value=''>请选择省份</option>";
+        $.each(d,function (index,item) {
+          op+="<option value='"+item.id+"'>"+item.p_name+"</option>";
+        });
+        $("#province").append(op);
+      }
+
+    });
+
+
+  }
+
+
+  function getParams(key) {
+    var keyList = [];
+    var valueList = [];
+    var hrefStr = decodeURIComponent(window.location.href);
+    var strArray = hrefStr.split("?");
+    var paramStr = strArray[1];
+    if((paramStr != null) && (paramStr != null)) {
+      var paramArray = paramStr.split("&");
+      for(var i = 0; i <
+      paramArray.length; i++) {
+        var param = paramArray[i];
+        valueList.push(param.substr(param.indexOf("=") + 1));
+        keyList.push(param.substr(0, param.indexOf("=")));
+      }
+      for(var j = 0; j < keyList.length; j++) {
+        if(key == keyList[j]) {
+          return valueList[j];
+        }
+      }
+    }
+  }
+</script>
+</body>
+</html>

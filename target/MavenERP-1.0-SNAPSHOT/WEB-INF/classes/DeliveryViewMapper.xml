@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.StatisDao">
+    <resultMap id="DeliveryViewMap" type="com.erp.pojo.Ck_warehouse">
+        <result column="total_count" property="count"></result>
+        <result column="indent" property="indent"></result>
+        <result column="c_date" property="c_date"></result>
+        <association property="warehouse" javaType="com.erp.pojo.Warehouse">
+            <result column="c_name" property="c_name"></result>
+        </association>
+        <association property="order" javaType="com.erp.pojo.Order">
+            <result column="orderMoney" property="orderMoney"></result>
+        </association>
+        <association property="users" javaType="com.erp.pojo.users">
+            <result column="uname" property="uname"></result>
+        </association>
+    </resultMap>
+    <select id="findDeliveryView" resultMap="DeliveryViewMap">
+        SELECT w.c_name,users.uname,o1.orderMoney,ck.indent,ck.c_date,
+        (SELECT SUM(o.purchase_num) FROM orderdetails o  WHERE o.Order_id=ck.indent) total_count
+        FROM ck_warehouse ck,warehouse w,users,erp.order o1
+        WHERE w.id = ck.warehouse_id
+        AND w.usre_id= users.U_id
+        AND o1.OrderId=ck.indent
+        AND ck.state=3
+        AND w.c_name = #{c_name}
+
+    </select>
+</mapper>

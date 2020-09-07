@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.userDao">
+    <select id="userlogin" resultType="com.erp.pojo.users">
+        SELECT * FROM users WHERE uname=#{uname} AND upassword=#{upassword} AND status_id=1
+    </select>
+
+    <resultMap type="com.erp.pojo.users" id="aedMap">
+        <result property="uname" column="uname"></result>
+        <association property="dept" javaType="com.erp.pojo.dept">
+            <result property="dept_name" column="dept_name"></result>
+        </association>
+        <association property="job" javaType="com.erp.pojo.job">
+            <result column="job_name" property="job_name"></result>
+            <collection property="setper" ofType="com.erp.pojo.permission">
+                <association property="module" javaType="com.erp.pojo.module">
+                    <id column="module_id" property="module_id"/>
+                    <result column="module_rname" property="module_rname" />
+                    <result column="module_murl" property="module_murl"></result>
+                    <result column="module_pid" property="module_pid"></result>
+                </association>
+            </collection>
+        </association>
+    </resultMap>
+
+<select id="findper" resultMap="aedMap">
+    SELECT u.uname,d.Dept_name,j.Job_name,m.module_id,m.module_rname,m.module_murl,m.module_pid FROM users u,dept d,job j,permission p,module m WHERE
+u.Dept_id=d.Dept_id
+AND u.job_id=j.Job_id
+AND p.comrid=j.Job_id
+AND p.compid=m.module_id
+AND d.Dept_state='正常'
+AND j.Job_state='正常'
+AND m.module_state='正常'
+AND p.Comstate=1
+AND u.uname=#{uname}
+</select>
+
+
+<select id="findmoduleurl" resultType="com.erp.pojo.module">
+   SELECT * FROM module m WHERE m.module_id=#{module_pid}
+   AND module_state='正常'
+</select>
+
+    <resultMap type="com.erp.pojo.users" id="userMap">
+        <id column="u_id" property="u_id"></id>
+        <result column="uname" property="uname" />
+        <result column="utelephone" property="utelephone" />
+        <result column="sex" property="sex" />
+        <result column="Status_id" property="Status_id" />
+        <result column="hiredate" property="hiredate" />
+        <result column="leavedate" property="leavedate" />
+        <result column="birthday" property="birthday" />
+        <association property="dept" javaType="com.erp.pojo.dept">
+            <result column="dept_name" property="Dept_name" />
+        </association>
+        <association property="job" javaType="com.erp.pojo.job">
+            <result column="job_name" property="Job_name" />
+        </association>
+    </resultMap>
+
+<select id="userlist" resultMap="userMap">
+SELECT u.*,d.Dept_name,j.Job_name FROM users u,dept d,job j WHERE u.Dept_id=d.Dept_id AND u.job_id=j.Job_id AND d.dept_state='正常'
+    <if test="u_id !=null and u_id!='' ">
+        AND u.u_id=#{u_id}
+    </if>
+    <if test="uname !=null and uname!='' ">
+        AND u.uname=#{uname}
+    </if>
+    <if test="daptname !=null and daptname!='' ">
+        AND d.Dept_name=#{daptname}
+    </if>
+    <if test="state !=null and state!='' ">
+        AND u.Status_id=#{state}
+    </if>
+    LIMIT #{startIndex},5
+</select>
+
+    <select id="getEmpUserCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM users u,dept d,job j WHERE u.Dept_id=d.Dept_id AND u.job_id=j.Job_id AND d.dept_state='正常'
+        <if test="u_id !=null and u_id!='' ">
+            AND u.u_id=#{u_id}
+        </if>
+        <if test="uname !=null and uname!='' ">
+            AND u.uname=#{uname}
+        </if>
+        <if test="daptname !=null and daptname!='' ">
+            AND d.Dept_name=#{daptname}
+        </if>
+        <if test="state !=null and state!='' ">
+            AND u.Status_id=#{state}
+        </if>
+    </select>
+
+   <!--  <resultMap id="deptMap" type="com.erp.pojo.dept">
+        <id column="Dept_id" property="Dept_id"></id>
+        <result column="Dept_name" property="Dept_name" />
+        <result column="Dept_state" property="Dept_state" />
+
+    </resultMap>-->
+ <select id="deptlist"   resultType="com.erp.pojo.dept">
+SELECT * FROM dept WHERE dept_state='正常'
+  </select>
+
+<select id="testUid" resultType="com.erp.pojo.users">
+    SELECT * FROM users WHERE u_id=#{u_id}
+</select>
+    <select id="testUname" resultType="com.erp.pojo.users">
+    SELECT * FROM users WHERE uname=#{uname}
+</select>
+
+ <select id="findjob" resultType="com.erp.pojo.job">
+
+     SELECT * FROM job WHERE job_dept_id=#{dept_id}
+ </select>
+
+    <insert id="saveUser" parameterType="com.erp.pojo.users">
+
+INSERT INTO users(u_id,uname,upassword,utelephone,dept_id,job_id,sex,Status_id,hiredate,birthday)
+VALUES(#{u_id},#{uname},#{upassword},#{utelephone},#{dept_id},#{job_id},#{sex},1,NOW(),#{birthday})
+
+</insert>
+
+
+  <update id="updateStatus" parameterType="com.erp.pojo.users">
+       UPDATE users
+       SET status_id=2,leavedate=NOW()
+       WHERE u_id=#{u_id}
+</update>
+    <update id="updateSureStatus" parameterType="com.erp.pojo.users">
+       UPDATE users
+       SET status_id=1,leavedate=null
+       WHERE u_id=#{u_id}
+</update>
+
+<select id="update_showuser" resultType="com.erp.pojo.users">
+    SELECT * FROM users WHERE u_id=#{u_id}
+</select>
+
+
+<update id="updateuser"     parameterType="com.erp.pojo.users">
+  UPDATE users
+       SET upassword=#{upassword},
+       utelephone=#{utelephone},
+       dept_id=#{dept_id},
+       job_id=#{job_id},
+       sex=#{sex},
+       status_id=#{status_id},
+       birthday=#{birthday}
+       WHERE u_id=#{u_id}
+
+</update>
+
+
+</mapper>

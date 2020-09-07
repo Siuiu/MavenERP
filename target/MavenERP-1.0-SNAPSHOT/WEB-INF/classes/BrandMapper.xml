@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.BrandDao">
+    <resultMap id="seBrand" type="com.erp.pojo.Brand">
+        <id column="brand_id" property="id"></id>
+        <id column="brand_name" property="name"></id>
+    </resultMap>
+    <resultMap id="findAllInfo" type="com.erp.pojo.Brand">
+        <id column="brand_id" property="id"></id>
+        <result column="brand_name" property="name"></result>
+        <result column="brand_status" property="status"></result>
+        <result column="creat_date" property="creatDate"></result>
+        <association property="user" javaType="com.erp.pojo.users">
+            <result column="uname" property="uname"></result>
+        </association>
+    </resultMap>
+    <select id="seBrandAllInfo" resultMap="seBrand">
+        SELECT brand_id,brand_name FROM brand
+        <where>
+            <if test="status==1">
+                brand_status=1
+            </if>
+        </where>
+    </select>
+    <select id="findAllInfo" resultMap="findAllInfo">
+        SELECT b.brand_id,b.brand_name,b.brand_status,b.creat_date,u.uname FROM brand b JOIN users u WHERE u.U_id=b.creat_id
+        <if test="bname!='null' and bname!=''">
+                and b.brand_name LIKE concat('%',#{bname},'%')
+        </if>
+        <if test="status!='null' and status!='' and status!=null ">
+            and b.brand_status=#{status}
+        </if>
+    </select>
+    <select id="getBrand" resultMap="findAllInfo">
+       SELECT b.brand_id,b.brand_name,b.brand_status,b.creat_date,u.uname FROM brand b JOIN users u ON u.U_id=b.creat_id WHERE b.brand_id=#{bid}
+    </select>
+    <update id="updateBrand">
+        UPDATE brand b
+        LEFT JOIN TYPE t ON  t.brand_id=b.brand_id
+        LEFT JOIN product p ON p.type_id=t.type_id
+        SET b.brand_status=#{status},t.type_ststus=#{status},p.product_status=#{status}
+        <if test="bname!='null' and bname!=''">
+             ,b.brand_name=#{bname}
+         </if>
+         where b.brand_id=#{bid}
+    </update>
+    <insert id="insertBrand">
+        INSERT INTO brand VALUES(NULL,#{name},#{status},#{creatDate},#{user.u_id})
+    </insert>
+    <select id="queryBrandName" resultMap="seBrand">
+        SELECT * FROM brand WHERE brand_name=#{bname}
+    </select>
+</mapper>

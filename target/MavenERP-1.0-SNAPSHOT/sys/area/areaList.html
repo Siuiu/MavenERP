@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>无标题文档</title>
+    <link href="../../css/style.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="../../css/pagination.css">
+    <script type="text/javascript" src="../../js/jquery.js"></script>
+    <script src="../../js/jquery-1.8.2.min.js"></script>
+    <script src="../../js/jquery.pagination.js"></script>
+
+
+</head>
+
+<body>
+<div class="place"><span>位置：</span>
+    <ul class="placeul">
+        <li>采购管理</li>
+        <li>品牌管理</li>
+        <li>基本内容</li>
+    </ul>
+</div>
+<div class="rightinfo">
+    <form action="" method="post">
+        <ul class="tools">
+            <li> 省:
+                <input type="text" id="p_name"/>
+            </li>
+            <li> 市:
+                <input type="text" id="c_name"/>
+            </li>
+
+            <li class="subBut" id='search'><img src="../../images/t06.png"/>查询</li>
+            <!-- <li class="subBut" onclick="window.location.href='brandList.html'"><img src="../../images/t06.png" />查询</li>-->
+
+        </ul>
+        <table class="tablelist">
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>省编号</th>
+                <th>省名称</th>
+                <th>市编号</th>
+                <th>市名称</th>
+            </tr>
+            </thead>
+            <tbody id="provincelist">
+
+            </tbody>
+        </table>
+
+        <div class="message">共<i class="blue" id="pageCount">237</i>条记录，当前显示第&nbsp;<i class="blue" id="pageIndex">1&nbsp;</i>页</div>
+    </form>
+    <div class="m-style"></div>
+</div>
+
+
+<script type="text/javascript">
+    $(function () {
+        showpro();
+
+        $("#search").click(function () {
+            showpro();
+        });
+
+
+    })
+
+
+    function showpro() {
+        var p_name = $("#p_name").val();
+        var c_name = $("#c_name").val();
+        $.ajax({
+            url: "provincelist",
+            type: "get",
+            data: {"p_name": p_name, "c_name": c_name, "pageIndex": 1},
+            dataType: "json",
+            success: function (d) {
+                var tr = "";
+                $("#provincelist tr").remove();
+                $.each(d.list, function (index, item) {
+                    tr += "<tr>";
+                    tr += "<td>" + (index + 1) + "</td>";
+                    tr += " <td>" + item.pro.id+ "</td>";
+                    tr += " <td>" + item.pro.p_name + "</td>";
+                    tr += " <td>" + item.c_number+ "</td>";
+                    tr += " <td>" + item.c_name + "</td>";
+                    tr += " </tr>";
+                });
+                $("#provincelist").append(tr);
+                $('.m-style').pagination({
+                    totalData: d.rowCount,
+                    showData: d.pageSize,
+                    mode: 'fixed',
+                    coping: true,
+                    homePage: '首页',
+                    endPage: '末页',
+                    prevContent: '上页',
+                    nextContent: '下页',
+                    callback: function (api) {
+                        //当前的页码
+                        getshowpro(api.getCurrent());
+
+                    }
+                })
+
+            }
+        });
+    }
+
+    function getshowpro(pageIndex) {
+        var p_name = $("#p_name").val();
+        var c_name = $("#c_name").val();
+        $.ajax({
+            url: "provincelist",
+            type: "get",
+            data: {"p_name": p_name, "c_name": c_name, "pageIndex": pageIndex},
+            dataType: "json",
+            success: function (d) {
+                var tr = "";
+                $("#provincelist tr").remove();
+                $.each(d.list, function (index, item) {
+                    tr += "<tr>";
+                    tr += "<td>" + (index + 1) + "</td>";
+                    tr += " <td>" + item.pro.id + "</td>";
+                    tr += " <td>" + item.pro.p_name + "</td>";
+                    tr += " <td>" + item.c_number + "</td>";
+                    tr += " <td>" + item.c_name + "</td>";
+                    tr += " </tr>";
+                });
+                $("#provincelist").append(tr);
+
+            }
+        });
+    }
+</script>
+</body>
+</html>
